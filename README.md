@@ -1,2 +1,2 @@
-# The9thBedroom.github.io
+# The9thBedroom
 My personal portfolio
