@@ -156,12 +156,71 @@
                            The journey begins in the Free-play mode, where user can familiarize themselves with drum set and interactions. From there the player may open the pause menu, contained here are options such as Entering different modes (Free-Play, Play Along, Tutorial and Challenge Mode), Drum and environment customization and settings including toggling Haptics, VFX and drum animations.
 
                         </p>
-                        <a href="https://github.com/MilesJMaiden/AugmentedRealities" class="btn project-button">GitHub Repo</a>
+
                     </div>
                 </div>
-                <!-- Add more project cards as needed -->
+				
+				<div class="project-card left" data-sr>
+                    <div class="project-image" data-sr="enter right move 50px">
+                        <img src="images/BeatBoxTimelineScreenshot.png" alt="">
+						<img src="images/BeatBoxVRGantt.png" alt="">
+						<img src="images/BeatBoxVRGitHubStats.png" alt="">
+
+                    </div>
+                    <div class="project-info" data-sr="enter left move 50px">
+                        <h3>Detailed Contribution Breakdown and Timeline</h3>
+                        <p>
+                            <b>Weeks 1-2: Establishing Core Mechanics and Sound Feedback</b><br /><br />
+                            Initialized the project by setting up a basic VR environment in Unity and configuring the XR settings for headset and controller tracking.<br /><br />
+							Developed the foundational drumstick interaction system. This involved programming VR controllers to detect collisions with virtual drums and cymbals, triggering corresponding sounds. The collision detection logic meticulously differentiates between various parts of the drum kit to produce accurate sound feedback. <br /><br />
+							
+                            <b>Weeks 3-4: Implementing UI and Enhancing Sound Design</b><br /><br />
+                            Focused on user interface design, crafting a menu system that allows users to navigate through game modes seamlessly. Implemented Unity's UI toolkit to create responsive and visually appealing buttons and sliders for settings like volume control and difficulty selection. <br /><br />
+							Enhanced the audio system by integrating spatial audio effects, providing a more immersive playing experience. This involved adjusting the audio source's spatial blend parameters and utilizing Unity's 3D sound settings to mimic real-life acoustics.<br /><br /> 
+                            
+							
+							<b>Weeks 5-6: Adding Visual Feedback and Performance Tweaks</b> <br /><br /> 
+							Introduced visual feedback for drum hits using particle effects and animations. For each drum and cymbal, a specific animation that mimics the real-life movement and rebound, enriching the player's visual experience.<br /><br /> 
+							Tackled performance optimization to ensure a smooth experience across all VR devices. This included implementing object pooling for the particle systems and audio clips, significantly reducing the overhead caused by frequent instantiations during gameplay.<br /><br /> 
+							
+							<b>Weeks 7-8: Refining PlayModeManager and Customization Options</b> <br />
+							<br />Revamped the PlayModeManager to support dynamic song selection and seamless transitions between gameplay states. This involved writing robust logic to manage game states, including song playing, pausing, and switching, alongside ensuring flawless synchronization between the visual timeline and audio playback.<br />
+							<br />Developed a drum kit customization feature, enabling players to personalize their virtual drum setup. Implemented a drag-and-drop interface within the VR environment, allowing users to reposition and rotate drums and cymbals to their liking. Persistence was achieved by saving the configurations to user profiles.<br /><br />
+							
+                        </p>					
+						    <a href="https://github.com/MilesJMaiden/VirtualReality" class="btn project-button">GitHub Repo</a>
+                    </div>
+                </div>
+				
+					<div class="project-card right" data-sr>
+                    <div class="project-image" data-sr="enter left move 50px">
+                        <img src="images/PlayMode1.png" alt="BeatBox-VR User interface elements">
+                    </div>
+                    <div class="project-info" data-sr="enter right move 50px">
+                        <h3>Up-Surge Mechanics</h3>
+                        <p>
+							<b>Advanced Hi-Hat System</b><br /><br />
+                            One of the stand-out features I developed was the advanced hi-hat control system. This involved a sophisticated detection of the hi-hat's open and closed states, simulating the nuanced effect of the foot pedal pressure. By harnessing the power of Unity's Input System, I created a dynamic mapping that translates the VR controller's downward velocity into pedal pressure. This velocity determines the sound produced, accurately mimicking the distinct sounds of open and closed hi-hats. The implementation greatly enhanced the drumming experience, adding a layer of realism and skill differentiation that players appreciated.<br /><br />
+							
+							<b>Customizable Instrument Placement</b><br /><br />
+							Another key development was enabling players to customize their virtual drum kit setup. Recognizing the importance of personal comfort and preference in a drumming experience, I utilized Unity's XR Interaction Toolkit to allow users to adjust the position and rotation of drums and cymbals within the VR space. This feature not only increased the immersion but also allowed players to fine-tune their setups for optimal playability, catering to various physical spaces and player preferences.<br /><br />
+
+							<b>Reactive Environment</b><br /><br />
+							Enhancing the immersive experience further, a reactive environment system was envisioned. As players progress and hit higher streaks, the virtual environment around them would dynamically change. This could range from visual effects, like lighting changes or particle effects, to auditory cues that escalate with the player's performance. Such a feature would not only serve as visual and auditory feedback for the player's success but also significantly enhance the immersive quality of the game, making each session unique and rewarding.<br /><br />
+							
+							<b>PlayMode Leaderboard</b><br /><br />
+							To foster a competitive and engaging environment, I proposed the addition of a PlayMode leaderboard system. This system would track players' scores across sessions, encouraging continuous improvement and practice. Implementing such a system would involve storing and retrieving player scores in a backend database and displaying them within the game in a user-friendly manner. It could also include social features, such as sharing scores on social media or challenging friends to beat high scores.                        
+						</p>
+
+                    </div>
+                </div>
+				
             </div>
+			
+
         </section>
+		
+		
 
         <section id="contact" class="fade-in-slide">
             <div class="container">
