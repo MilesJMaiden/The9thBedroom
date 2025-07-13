@@ -77,33 +77,43 @@ section {
   grid-gap: 1rem;
 }
 
-/* Buttons */
-.btn {
+/* ── BUTTONS ───────────────────────────────────────────────────────────── */
+
+/* Base style for all buttons */
+.btn,
+.view-all-btn {
   display: inline-block;
   padding: 10px 20px;
-  background-color: #333;
-  color: white;
+  background-color: #fff;       /* white */
+  color: #000;                  /* black text */
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
+  border: 2px solid #000;       /* black outline */
   border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-  transition: background-color 0.2s ease-in-out;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.btn:hover {
-  background-color: #444;
+/* Hover state: invert to black background, white text */
+.btn:hover,
+.view-all-btn:hover {
+  background-color: #000;       /* black */
+  color: #fff;                  /* white text */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* If you still need the little shine-on-hover effect removed, drop the ::before rules entirely */
+/* (Otherwise just delete or comment out the following): */
+/*
 .btn::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.1);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(255,255,255,0.1);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease-in-out;
@@ -112,25 +122,12 @@ section {
 .btn:hover::before {
   transform: scaleX(1);
 }
+*/
 
-/* View all buttons */
+/* .center-btn and .fade-in-slide remain unchanged */
 .center-btn {
   text-align: center;
   margin-top: 2rem;
-}
-
-.view-all-btn {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: background 0.3s;
-}
-
-.view-all-btn:hover {
-  background: #333;
 }
 
 .fade-in-slide {
@@ -139,28 +136,28 @@ section {
   transition: opacity 0.5s, transform 0.5s;
 }
 
-/* navbar */
+
+/* ── NAVBAR ─────────────────────────────────────────────────────────── */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background-color: #333;
+  background-color: #000;    /* true black */
   padding: 0;
   margin: 0;
   position: relative;
   height: 60px;
   line-height: 60px;
-  margin-bottom: 0;
+  z-index: 1000;
 }
 
-/* UPDATED: flex‐layout for logo + text */
+/* brand logo: svg + text */
 .navbar .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-
-  color: white;
+  gap: 0.5rem;               /* space between icon & text */
+  color: #fff;
   text-decoration: none;
   font-size: 2.75rem;
   margin-left: 20px;
@@ -168,81 +165,90 @@ section {
   transition: text-shadow 0.3s ease;
 }
 
-/* NEW: constrain SVG icon */
+/* constrain your SVG so it scales with the font-size */
 .navbar .brand-logo .logo-icon {
   width: 2.75rem;
   height: auto;
-  display: block;
 }
 
-/* NEW: ensure text still picks up hover */
+/* keep the text portion hoverable */
 .navbar .brand-logo .logo-text {
   cursor: pointer;
 }
 
+/* subtle glow on hover */
 @keyframes glowing {
-  0%, 100% {
-    text-shadow: none;
-  }
-  50% {
-    text-shadow: 0 0 2px #ffffff, 0 0 16px #ffffff, 0 0 24px #ffffff, 0 0 32px #ffffff;
-  }
+  0%,100%   { text-shadow: none; }
+  50%       { text-shadow:
+                0 0 1px rgba(255,255,255,0.5),
+                0 0  8px rgba(255,255,255,0.5),
+                0 0 12px rgba(255,255,255,0.5),
+                0 0 16px rgba(255,255,255,0.5);
+             }
 }
-
 .navbar .brand-logo:hover {
   animation: glowing 5s infinite;
   animation-fill-mode: forwards;
 }
 
+/* ── LINKS ──────────────────────────────────────────────────────────── */
+/* container now expands to fill between logo and edge */
 .navbar-links {
   display: flex;
-  gap: 20px;
-  margin-right: 20px;
+  flex: 0 0 33.337%;;            /* grow to fill the space between logo and edge */
+  margin: 0;          /* eliminate any extra gap on the right */
+  padding: 0;
 }
 
+/* each link is an equal flex‐item, centered both ways */
 .navbar-links a {
-  color: white;
+  flex: 1;            /* equal width for every button */
+  display: flex;      /* center its text */
+  align-items: center;
+  justify-content: center;
+  height: 100%;       /* full navbar height */
+  color: #fff;
+  background: transparent;
   text-decoration: none;
   font-size: 1.1rem;
-  line-height: inherit;
-  position: relative;
-  padding: 0 1rem;
-  transition: color 0.3s ease;
-  display: inline-block;
   font-weight: bold;
   letter-spacing: 0.1em;
-  padding: 0 0.5rem;
+  position: relative; /* for the underline pseudo‐element */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;          /* ensure no stray margins */
 }
 
+/* the full-width underline, hidden by default */
 .navbar-links a::before {
-  content: '';
+  content: "";
   position: absolute;
-  width: 100%;
-  height: 3px;
-  bottom: 0;
   left: 0;
-  background-color: white;
-  visibility: hidden;
+  bottom: 0;
+  width: 33%;
+  height: 3px;
+  background-color: #000;
   transform: scaleX(0);
-  transition: all 0.3s ease-in-out 0s;
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
-.navbar-links a:hover {
-  color: #f5f5f5;
+/* hover & active: white background, black text */
+.navbar-links a:hover,
+.navbar-links a.active {
+  background-color: #fff;
+  color: #000;
 }
 
-.navbar-links a:hover::before {
-  visibility: visible;
-  transform: scaleX(1);
-}
-
+/* show the underline on hover or when “active” */
+.navbar-links a:hover::before,
 .navbar-links a.active::before {
-  visibility: visible;
   transform: scaleX(1);
 }
 
+
+/* ── HAMBURGER MENU ───────────────────────────────────────────────────────── */
 .hamburger {
-  background-color: #333;
+  background-color: #000;                     /* black background */
   display: none;
   position: fixed;
   top: 15px;
@@ -253,26 +259,45 @@ section {
   flex-direction: column;
   justify-content: center;
   font-size: 30px;
-  color: #fff;
   border-radius: 4px;
   padding: 8px;
   box-sizing: border-box;
-  transition: opacity 1s ease-in-out;
+  transition: background-color 0.3s ease, opacity 1s ease-in-out;
+  outline: none;                              /* remove focus outline */
+  border: none;                               /* remove any border */
 }
 
-.hamburger span {
-  background-color: white;
+/* target the three bars inside your inline SVG */
+.hamburger svg g {
+  fill: #fff;                                 /* white bars by default */
+  transition: fill 0.3s ease;
 }
 
+/* force white bars by default */
+.hamburger svg rect {
+  fill: #fff !important;
+}
+
+/* on hover, invert to black bars */
+.hamburger:hover svg rect {
+  fill: #000 !important;
+}
+
+/* hover state: invert background & bar colors */
 .hamburger:hover {
-  background-color: #444;
+  background-color: #fff;                     /* white background */
 }
 
-.line {
-  width: 35px;
-  height: 4px;
-  background-color: #333;
+.hamburger:hover svg g {
+  fill: #000;                                 /* black bars on hover */
 }
+
+/* also remove outline if it ever appears on focus */
+.hamburger:focus {
+  outline: none;
+}
+
+
 
 .navbar-menu {
   display: none;
@@ -398,80 +423,94 @@ section {
   }
 }
 
+/* ── SLIDE-IN CONTENT ───────────────────────────────────────────────────────── */
+
+/* base: hidden, shifted down */
 .slide-content {
   position: absolute;
   bottom: 10%;
-  left: 0;
-  color: white;
-  z-index: 1;
-  padding: 1rem 1rem 1rem 2rem;
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 0 10px 10px 0;
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  max-width: 33.333%;
+  left: 2%;
+  max-width: 40%;                           /* a little wider on large screens */
+  padding: 1.5rem 2rem;                     /* more breathing room */
+  background: rgba(0, 0, 0, 0.5);           /* slightly darker overlay */
+  border-radius: 0 8px 8px 0;               /* slightly tighter rounding */
+  color: #fff;
   opacity: 0;
-  animation: fadeIn 1s forwards;
-  visibility: hidden;
+  transform: translateY(20px);
+  transition: 
+    opacity 0.6s ease-out, 
+    transform 0.6s ease-out;
+  pointer-events: none;                     /* ignore clicks when hidden */
 }
 
+/* when its parent gets .active, fade/slide into place */
+.slide.active .slide-content {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* typography tweaks */
 .slide-content h1 {
-  font-size: 3rem;
-  margin: 0;
-  padding-bottom: 0.5rem;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
 }
 
 .slide-content p {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   margin: 0;
-  padding-top: 0.5rem;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
-.slide.active .slide-content {
-  opacity: 1;
-  visibility: visible;
-    animation: fadeIn 1.5s ease-out forwards;
-}
 
+
+/* ── PREV / NEXT BUTTONS ───────────────────────────────────────────────────── */
+
+/* Gallery & Home Slider Prev/Next Buttons */
 .slider-btn {
+  --bg: #000;   /* button bg */
+  --fg: #fff;   /* arrow color */
+
   position: absolute;
   top: 50%;
-  background: #333;
+  width: 44px;
+  height: 44px;
+  background: var(--bg);
+  color: var(--fg);
   border: none;
-  cursor: pointer;
-  z-index: 1;
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s;
+  transform: translateY(-50%);
+  cursor: pointer;
+  /* smoother, longer fade on hover */
+  transition:
+    background 0.5s ease-in-out,
+    color 0.5s ease-in-out,
+    box-shadow 0.5s ease-in-out;
+  z-index: 2;
 }
 
-.prev-btn {
-  left: 1%;
+/* force the SVG arrow to inherit the button’s color */
+.slider-btn svg path {
+  fill: currentColor !important;
 }
 
-.next-btn {
-  right: 1%;
-}
+/* position overrides */
+.prev-btn { left: 1%; }
+.next-btn { right: 1%; }
 
-.slider-btn img {
-  width: 24px;
-  height: 24px;
-}
-
+/* hover: invert & lift */
 .slider-btn:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
+
+/* ── Slide Indicator ───────────────────────────────────────────────────────── */
 .slide-indicator {
   position: absolute;
   bottom: 3%;
@@ -483,10 +522,11 @@ section {
   z-index: 1;
 }
 
+/* base dot */
 .dot {
   width: 10px;
   height: 10px;
-  background-color: #bbb;
+  background-color: #bbb;    /* inactive */
   border-radius: 50%;
   display: inline-block;
   margin: 0 5px;
@@ -494,17 +534,26 @@ section {
   transition: background-color 0.3s;
 }
 
-.dot.active, .dot:hover {
+/* hover state for any dot */
+.dot:hover {
+  background-color: #888;    /* grey on hover */
 }
 
-/* About section */
+/* active slide indicator */
+.dot.active {
+  background-color: #fff;    /* white when active */
+}
+}
+
+
+/* ── ABOUT SECTION ───────────────────────────────────────────────────── */
 #about {
-  padding: 2rem;
+  padding: 6rem 2rem;           /* more top/bottom breathing room */
 }
 
 #about h2 {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;          /* extra space under the heading */
   font-size: 2.5rem;
   font-weight: 600;
   color: #333;
@@ -514,25 +563,31 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 2rem;
+  margin-right: 2rem; 
+  gap: 4rem;                    /* larger gap between each about-item */
 }
 
 .about-item {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;          /* more space under each duo */
+}
+
+.about-text,
+.about-image {
+  flex: 1;
+  padding: 2rem;                /* double the inner padding */
+  box-sizing: border-box;
+  opacity: 0;
 }
 
 .about-text {
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 1rem;
-  box-sizing: border-box;
-  position: relative;
-  opacity: 0;
   font-size: 1.1rem;
   line-height: 1.6;
   color: #333;
@@ -540,76 +595,55 @@ section {
 
 .about-text h3 {
   font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-  text-align: left;
+  margin-bottom: 1rem;          /* more room under subheadings */
   width: 100%;
   font-weight: 600;
 }
 
 .about-text p {
   text-align: justify;
+  margin-bottom: 1.5rem;        /* space after paragraphs if stacked */
 }
 
 .about-image {
-  flex: 1;
   text-align: center;
-  padding: 1rem;
-  box-sizing: border-box;
-  opacity: 0;
 }
 
 .about-image img {
   width: 100%;
   height: auto;
   border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .about-image img:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
-.left {
-  text-align: left;
-}
-
-.right {
-  text-align: right;
-}
+/* retain your existing reveal animations */
+.left { text-align: left; }
+.right { text-align: right; }
 
 .about-text.left.animated,
 .about-image.right.animated {
   animation: fadeInLeft 1s ease-out forwards;
 }
-
 .about-text.right.animated,
 .about-image.left.animated {
   animation: fadeInRight 1s ease-out forwards;
 }
 
 @keyframes fadeInLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(-50px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes fadeInRight {
-  0% {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 
 /* Projects section */
 #projects {
@@ -733,6 +767,7 @@ section {
 }
 
 .swiper-slide {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -761,7 +796,7 @@ section {
 .img-container {
   position: relative;
   width: auto;
-  height: 200px; /* Set the desired height for the images here */
+  height: 200px; /* desired image height */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -780,7 +815,6 @@ section {
 .swiper-slide:hover img {
   transform: scale(1.05);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
   z-index: 1;
 }
 
@@ -788,37 +822,56 @@ section {
   opacity: 1;
 }
 
+/* remove default Swiper arrows */
 .swiper-button-prev::after,
 .swiper-button-next::after {
   display: none;
 }
 
+/* ── unified slider-btn styling ───────────────────────────────────────── */
 .swiper-button-prev.slider-btn,
 .swiper-button-next.slider-btn {
+  --bg: #000;    /* button background */
+  --fg: #fff;    /* arrow color */
+
   position: absolute;
   top: calc(50% + 25px);
   transform: translateY(-50%);
-  background: #333;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  background: var(--bg);
+  color: var(--fg);
+  border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+  z-index: 2;
 }
 
-.swiper-button-prev.slider-btn {
-  left: 1%;
+/* force SVG arrow to use currentColor */
+.swiper-button-prev.slider-btn svg path,
+.swiper-button-next.slider-btn svg path {
+  fill: currentColor !important;
 }
 
-.swiper-button-next.slider-btn {
-  right: 1%;
-}
+/* position overrides */
+.swiper-button-prev.slider-btn { left: 1%; }
+.swiper-button-next.slider-btn { right: 1%; }
 
+/* hover: invert & lift */
 .swiper-button-prev.slider-btn:hover,
 .swiper-button-next.slider-btn:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
+
 
 /* Blog Section */
 #blog {
@@ -958,7 +1011,7 @@ section {
 
 /* Footer styles */
 footer {
-  background-color: #333;
+  background-color: #000;
   padding: 20px 0;
   color: #fff;
   text-align: center;
@@ -976,69 +1029,39 @@ footer {
   padding: 10px 0;
 }
 
+/* Footer social icons */
 .social-media-links {
-  list-style-type: none;
+  list-style: none;
   display: flex;
+  justify-content: center;  /* center the row */
   padding: 0;
   margin: 0;
 }
-
 .social-media-links li {
-  margin: 0 5px;
+  margin: 0 8px;
 }
-
 .social-media-links a {
-  text-decoration: none;
-  color: #fff;
-  padding: 5px;
+  color: #fff;               /* default white */
+  font-size: 1.5rem;         /* adjust icon size if needed */
+  transition: color 0.3s ease;
 }
 
-/* Social media icons */
-.social-media-links a {
-  color: #fff;
-  padding: 5px;
-  transition: color 0.3s;
-}
+/* On hover, change the anchor’s color – the <i> inherits it */
+.social-media-links a.linkedin:hover  { color: #0A66C2; }
+.social-media-links a.github:hover    { color: #181717; }
+.social-media-links a.twitter:hover   { color: #1DA1F2; }
+.social-media-links a.instagram:hover { color: #E4405F; }
+.social-media-links a.facebook:hover  { color: #1877F2; }
 
-/* LinkedIn */
-.social-media-links a.linkedin:hover .icon {
-  fill: #0A66C2;
-}
-
-/* GitHub */
-.social-media-links a.github:hover .icon {
-  fill: #181717;
-}
-
-/* Twitter */
-.social-media-links a.twitter:hover .icon {
-  fill: #1DA1F2; 
-}
-
-/* Instagram */
-.social-media-links a.instagram:hover .icon {
-  fill: #E4405F; 
-}
-
-/* Facebook */
-.social-media-links a.facebook:hover .icon {
-  fill: #1877f2; 
-}
-
-.social-media-links img {
-  width: 24px; /* Adjust the size of the icons */
-  height: 24px;
-  fill: #fff; /* Set the icon color */
-  padding: 5px;
-  transition: fill 0.3s;
-}
-
+.social-media-links img,
 .icon {
   width: 24px;
   height: 24px;
   fill: currentColor;
   padding: 5px;
+  transition: fill 0.3s;
 }
+
 
 /* GALLERY PAGE */
 .gallery-container {

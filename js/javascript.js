@@ -8,64 +8,39 @@
   var lightboxCaption = document.querySelector(".lightbox-caption");
   var closeBtn        = document.querySelector(".close");
   var lightboxContent = document.querySelector(".lightbox-content");
-
-  // Ensure aria-hidden initially
   lightbox.setAttribute("aria-hidden", "true");
-
   function openLightbox(e) {
     e.preventDefault();
     var container = e.target.closest(".img-container");
     if (!container) return;
     var imageSource = container.querySelector("img").getAttribute("src");
     var imageData   = container.closest("a").getAttribute("data-title").split("|");
-    var imageCaptionText    = imageData[0];
-    var imageDescriptionText = imageData[1];
-
     lightboxImage.src           = imageSource;
-    lightboxHeader.textContent  = imageCaptionText;
-    lightboxCaption.textContent = imageDescriptionText;
+    lightboxHeader.textContent  = imageData[0];
+    lightboxCaption.textContent = imageData[1];
     lightbox.style.display      = "block";
     lightbox.setAttribute("aria-hidden", "false");
     document.documentElement.style.overflow = "hidden";
   }
-
   document.addEventListener("click", function (e) {
-    if (e.target.closest(".custom-lightbox")) {
-      openLightbox(e);
-    }
+    if (e.target.closest(".custom-lightbox")) openLightbox(e);
   });
-
   function closeLightbox() {
     lightbox.style.display = "none";
     lightbox.setAttribute("aria-hidden", "true");
-    document.body.style.overflow       = "auto";
     document.documentElement.style.overflow = "auto";
   }
-
-  lightbox.addEventListener("click", function (event) {
-    event.preventDefault();
-    if (
-      event.target === lightbox ||
-      event.target === closeBtn ||
-      event.target === lightboxContent
-    ) {
+  lightbox.addEventListener("click", function (e) {
+    e.preventDefault();
+    if ([ lightbox, closeBtn, lightboxContent ].includes(e.target)) {
       closeLightbox();
     }
   });
-
-  lightboxImage.addEventListener("click", function (event) {
-    event.stopPropagation();
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeLightbox();
   });
-  lightboxCaption.addEventListener("click", function (event) {
-    event.stopPropagation();
-  });
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" || event.keyCode === 27) {
-      closeLightbox();
-    }
-  });
-
+  lightboxImage.addEventListener("click", e => e.stopPropagation());
+  lightboxCaption.addEventListener("click", e => e.stopPropagation());
 
   //
   // ── SWIPER CAROUSEL ───────────────────────────────────────────────────────
@@ -87,7 +62,6 @@
       1025: { slidesPerView: 4 },
     },
   });
-
   const swiperContainer = document.querySelector(".swiper-container");
   swiperContainer.addEventListener("mouseenter", () => swiperInstance.autoplay.stop());
   swiperContainer.addEventListener("mouseleave", () => swiperInstance.autoplay.start());
@@ -95,110 +69,103 @@
   //
   // ── HOMEPAGE SLIDER ──────────────────────────────────────────────────────
   //
-  let slider       = document.querySelector(".slider");
-  let slides       = slider.querySelectorAll(".slide");
-  let prevBtn      = slider.querySelector(".prev-btn");
-  let nextBtn      = slider.querySelector(".next-btn");
-  let currentIndex = 0;
-  let slideInterval = setInterval(
-    () => changeSlide((currentIndex + 1) % slides.length),
-    5000
-  );
+  const slideDuration = 8000; // ms
+  let slider           = document.querySelector(".slider");
+  let slides           = slider.querySelectorAll(".slide");
+  let prevBtn          = slider.querySelector(".prev-btn");
+  let nextBtn          = slider.querySelector(".next-btn");
+  let currentIndex     = 0;
+  let slideInterval;
+  let currentSlideTyped = null;
 
-  function setActiveDot(index) {
-    const dots = document.querySelectorAll(".dot");
-    dots.forEach((dot, i) => {
-      dot.classList.toggle("active", i === index);
+  function setActiveDot(i) {
+    document.querySelectorAll(".dot").forEach((dot, idx) => {
+      dot.classList.toggle("active", idx === i);
     });
   }
 
-function changeSlide(index) {
-  // hide old
-  slides[currentIndex].classList.remove("active");
+  function changeSlide(index) {
+    index = (index + slides.length) % slides.length;
+    slides[currentIndex].classList.remove("active");
+    currentIndex = index;
+    slides[currentIndex].classList.add("active");
+    setActiveDot(currentIndex);
 
-  // switch index
-  currentIndex = index;
+    if (currentSlideTyped) currentSlideTyped.destroy();
+    const descP = slides[currentIndex].querySelector(".slide-content p");
+    const text  = descP.getAttribute("data-text") || "";
+    descP.textContent = "";
+    currentSlideTyped = new Typed(descP, {
+      strings: [ text ],
+      typeSpeed: 40,
+      startDelay: 500,
+      showCursor: false
+    });
+  }
 
-  // show new
-  slides[currentIndex].classList.add("active");
+  function startSlideInterval() {
+    slideInterval = setInterval(() => changeSlide(currentIndex + 1), slideDuration);
+  }
+  function resetSlideInterval() {
+    clearInterval(slideInterval);
+    startSlideInterval();
+  }
 
-  // update dots
-  setActiveDot(currentIndex);
-}
-
-  prevBtn.addEventListener("click", () =>
-    changeSlide((currentIndex - 1 + slides.length) % slides.length)
-  );
-  nextBtn.addEventListener("click", () =>
-    changeSlide((currentIndex + 1) % slides.length)
-  );
-
-  document.querySelectorAll(".dot").forEach((dot, idx) => {
-    dot.addEventListener("click", () => changeSlide(idx));
+  prevBtn.addEventListener("click", () => {
+    changeSlide(currentIndex - 1);
+    resetSlideInterval();
   });
-  setActiveDot(0);
+  nextBtn.addEventListener("click", () => {
+    changeSlide(currentIndex + 1);
+    resetSlideInterval();
+  });
+  document.querySelectorAll(".dot").forEach((dot, idx) => {
+    dot.addEventListener("click", () => {
+      changeSlide(idx);
+      resetSlideInterval();
+    });
+  });
 
+  // kick off
+  changeSlide(0);
+  startSlideInterval();
 
-//
-// ── TYPED.JS ─────────────────────────────────────────────────────────────
-//
-
-// Main title
-new Typed("#typed-name", {
-  strings: ["9TH BEDROOM"],
-  typeSpeed: 50,
-  startDelay: 500,
-  showCursor: false,
-  loop: false,
-  onComplete(self) {
-    // remove the cursor once done
-    self.cursor.remove();
-  }
-});
-
-// Sub-title (appears after the main title finishes)
-new Typed("#typed-role", {
-  strings: ["An Indie Game Studio"],
-  typeSpeed: 50,
-  startDelay: 1500,   // tweak this if you want more or less gap
-  showCursor: false,
-  loop: false,
-  onComplete(self) {
-    self.cursor.remove();
-  }
-});
-
-
-
+  //
+  // ── TYPED.JS SITE TITLE & SUBTITLE ──────────────────────────────────────
+  //
+  new Typed("#typed-name", {
+    strings: ["9TH BEDROOM"],
+    typeSpeed: 50,
+    startDelay: 500,
+    showCursor: false,
+    loop: false,
+    onComplete(self) { self.cursor.remove(); }
+  });
+  new Typed("#typed-role", {
+    strings: ["An Indie Game Studio"],
+    typeSpeed: 50,
+    startDelay: 1500,
+    showCursor: false,
+    loop: false,
+    onComplete(self) { self.cursor.remove(); }
+  });
 
   //
   // ── ABOUT SECTION ANIMATION ───────────────────────────────────────────────
   //
-  function animateAboutSection() {
-    const aboutTexts  = document.querySelectorAll('.about-text');
-    const aboutImages = document.querySelectorAll('.about-image');
-
-    aboutTexts.forEach(text => {
-      if (isElementVisible(text) && !text.classList.contains('animated')) {
-        text.classList.add('animated');
-      }
-    });
-    aboutImages.forEach(img => {
-      if (isElementVisible(img) && !img.classList.contains('animated')) {
-        img.classList.add('animated');
-      }
-    });
-  }
-
   function isElementVisible(el) {
-    const rect         = el.getBoundingClientRect();
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    return rect.top <= windowHeight && rect.bottom >= 0;
+    const r = el.getBoundingClientRect();
+    return r.top <= window.innerHeight && r.bottom >= 0;
   }
-
+  function animateAboutSection() {
+    document.querySelectorAll('.about-text, .about-image').forEach(el => {
+      if (isElementVisible(el) && !el.classList.contains('animated')) {
+        el.classList.add('animated');
+      }
+    });
+  }
   window.addEventListener('scroll', animateAboutSection);
   animateAboutSection();
-
 
   //
   // ── SMOOTH SCROLL (jQuery) ───────────────────────────────────────────────
@@ -206,10 +173,10 @@ new Typed("#typed-role", {
   $(function () {
     $('a[href*="#"]:not([href="#"])').click(function () {
       if (
-        location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') &&
+        location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') &&
         location.hostname == this.hostname
       ) {
-        var target = $(this.hash);
+        let target = $(this.hash);
         target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
         if (target.length) {
           $('html, body').animate({ scrollTop: target.offset().top }, 1000);
@@ -219,7 +186,6 @@ new Typed("#typed-role", {
     });
   });
 
-
   //
   // ── CONTACT FORM SUBMISSION ───────────────────────────────────────────────
   //
@@ -228,9 +194,8 @@ new Typed("#typed-role", {
     alert("Form submitted!");
   });
 
-
   //
-  // ── NAVIGATION BUTTON CLICK EFFECT (jQuery) ─────────────────────────────
+  // ── NAVBAR LINK CLICK EFFECT ─────────────────────────────────────────────
   //
   $(".navbar-links a").on("click", function () {
     $(".navbar-links a").removeClass("active");
@@ -238,105 +203,81 @@ new Typed("#typed-role", {
     setTimeout(() => $(this).removeClass("active"), 500);
   });
 
-
   //
-  // ── HAMBURGER MENU TOGGLE WITH ARIA ─────────────────────────────────────
+  // ── HAMBURGER MENU WITH ARIA ─────────────────────────────────────────────
   //
   const navbar       = document.querySelector(".navbar");
-  const navbarMenu   = document.querySelector(".navbar-menu");
+  const navbarMenu   = document.querySelector("#navbar-menu");
   const hamburgerBtn = document.querySelector(".hamburger");
   const closeMenuBtn = document.querySelector(".close-menu-btn");
-  const menuItems    = document.querySelectorAll(".navbar-menu a");
+  const menuItems    = navbarMenu.querySelectorAll("a");
 
-  // initialize ARIA
-  hamburgerBtn.setAttribute("aria-expanded", "false");
-  navbarMenu.setAttribute("aria-hidden",  "true");
+  hamburgerBtn.setAttribute("aria-expanded","false");
+  navbarMenu.setAttribute("aria-hidden","true");
 
   function handleHamburgerClick() {
-    const expanded = hamburgerBtn.getAttribute("aria-expanded") === "true";
+    const expanded = hamburgerBtn.getAttribute("aria-expanded")==="true";
     hamburgerBtn.setAttribute("aria-expanded", String(!expanded));
-    navbarMenu.setAttribute("aria-hidden",  String(expanded));
+    navbarMenu.setAttribute("aria-hidden", String(expanded));
     navbarMenu.classList.toggle("active");
     hamburgerBtn.style.display = "none";
   }
-
   function collapsePanel() {
     navbarMenu.classList.remove("active");
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    navbarMenu.setAttribute("aria-hidden",  "true");
+    hamburgerBtn.setAttribute("aria-expanded","false");
+    navbarMenu.setAttribute("aria-hidden","true");
     setTimeout(() => {
       handleScroll();
       if (!navbarMenu.classList.contains("active")) {
         hamburgerBtn.style.opacity = "0";
         hamburgerBtn.style.display = "flex";
-        setTimeout(() => (hamburgerBtn.style.opacity = "1"), 10);
+        setTimeout(() => (hamburgerBtn.style.opacity="1"), 10);
       }
     }, 200);
   }
-
   hamburgerBtn.addEventListener("click", handleHamburgerClick);
   closeMenuBtn.addEventListener("click", collapsePanel);
   menuItems.forEach(item => item.addEventListener("click", collapsePanel));
-
 
   //
   // ── SHOW/HIDE HAMBURGER ON SCROLL ────────────────────────────────────────
   //
   function handleScroll() {
-    var currentScrollPosition = window.pageYOffset;
-    var navbarHeight          = navbar.offsetHeight;
-    if (window.innerWidth <= 768) {
-      if (currentScrollPosition < navbarHeight) {
-        hamburgerBtn.style.opacity = "0";
-        setTimeout(() => (hamburgerBtn.style.display = "none"), 10);
-      } else if (!navbarMenu.classList.contains("active")) {
-        hamburgerBtn.style.display = "flex";
-        setTimeout(() => (hamburgerBtn.style.opacity = "1"), 10);
-      }
-    } else {
-      if (currentScrollPosition < navbarHeight) {
-        hamburgerBtn.style.opacity = "0";
-        setTimeout(() => (hamburgerBtn.style.display = "none"), 10);
-      } else if (!navbarMenu.classList.contains("active")) {
-        hamburgerBtn.style.display = "flex";
-        setTimeout(() => (hamburgerBtn.style.opacity = "1"), 10);
-      }
+    const scrollPos = window.pageYOffset;
+    const navbarH   = navbar.offsetHeight;
+    if (scrollPos < navbarH) {
+      hamburgerBtn.style.opacity = "0";
+      setTimeout(() => (hamburgerBtn.style.display="none"), 10);
+    } else if (!navbarMenu.classList.contains("active")) {
+      hamburgerBtn.style.display = "flex";
+      setTimeout(() => (hamburgerBtn.style.opacity="1"), 10);
     }
   }
-
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("resize", handleScroll);
-  handleScroll(); // initial setup
-
+  handleScroll();
 
   //
-  // ── SLIDE-IN EFFECT ON SCROLL (jQuery) ─────────────────────────────────
+  // ── SLIDE-IN ON SCROLL (jQuery) ─────────────────────────────────────────
   //
   $(window).on("scroll", function () {
     $(".fade-in-slide").each(function () {
-      var sectionOffset  = $(this).offset().top;
-      var windowHeight   = $(window).height();
-      var scrollPosition = $(window).scrollTop();
-      if (scrollPosition + windowHeight > sectionOffset + windowHeight / 4) {
-        $(this).css({
-          opacity: 1,
-          transform: "translateY(0)"
-        });
+      const offset  = $(this).offset().top;
+      const winH    = $(window).height();
+      const scrollP = $(window).scrollTop();
+      if (scrollP + winH > offset + winH/4) {
+        $(this).css({ opacity: 1, transform: "translateY(0)" });
       }
     });
   });
 
-
   //
-  // ── SET ACTIVE NAVBAR LINK ON LOAD ──────────────────────────────────────
+  // ── ACTIVATE NAVBAR LINK ON LOAD ─────────────────────────────────────────
   //
   function setActiveNavbarItem() {
-    var currentURL  = window.location.href;
-    var navbarLinks = document.querySelectorAll(".navbar-links a");
-    navbarLinks.forEach(link => {
-      link.classList.toggle("active", currentURL.includes(link.getAttribute("href")));
-    });
+    const url = window.location.href;
+    document.querySelectorAll(".navbar-links a")
+      .forEach(link => link.classList.toggle("active", url.includes(link.getAttribute("href"))));
   }
-
   setActiveNavbarItem();
 });
