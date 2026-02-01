@@ -1,141 +1,162 @@
-document.addEventListener("DOMContentLoaded", function () {
+// Mark that JS is active ASAP (before DOMContentLoaded)
+document.documentElement.classList.add("js");
 
-  // Smooth scrolling
-  $(function() {
-    $('a[href*="#"]:not([href="#"])').click(function() {
-      if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
-        var target = $(this.hash);
-        target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
-        if (target.length) {
-          $('html, body').animate({
-            scrollTop: target.offset().top
-          }, 1000);
-          return false;
-        }
-      }
-    });
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  setupSmoothScroll();
+  setupContactForm();
+  setupMobileNav();
+  setupFadeInOnView();
+  setActiveNavbarItem();
+});
 
-  // Contact form submission
-  $("#contact-form").on("submit", function(e) {
+/* ─────────────────────────────────────────────────────────────
+   Smooth scrolling (native, navbar offset)
+───────────────────────────────────────────────────────────── */
+function setupSmoothScroll() {
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest('a[href*="#"]:not([href="#"])');
+    if (!link) return;
+
+    const url = new URL(link.href, window.location.href);
+    const isSamePage = url.pathname === window.location.pathname && url.origin === window.location.origin;
+    if (!isSamePage || !url.hash) return;
+
+    const target = document.querySelector(url.hash);
+    if (!target) return;
+
     e.preventDefault();
 
-    // Add your custom form handling logic here
+    const nav = document.querySelector(".navbar");
+    const navH = nav ? nav.offsetHeight : 0;
+    const targetTop = window.pageYOffset + target.getBoundingClientRect().top - navH;
+
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Contact form (only if present)
+───────────────────────────────────────────────────────────── */
+function setupContactForm() {
+  const form = document.querySelector("#contact-form");
+  if (!form) return;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
     alert("Form submitted!");
   });
+}
 
-  // Navigation button click effect
-  $("nav ul li a").on("click", function() {
-    $("nav ul li a").removeClass("active");
-    $(this).addClass("active");
-
-    setTimeout(() => {
-      $(this).removeClass("active");
-    }, 500); // Change this value to control the duration of the flash effect (in milliseconds)
-  });
-
-  //nav
-  const navbar = document.querySelector(".navbar");
+/* ─────────────────────────────────────────────────────────────
+   Mobile nav (single state: .active)
+───────────────────────────────────────────────────────────── */
+function setupMobileNav() {
   const navbarMenu = document.querySelector(".navbar-menu");
   const hamburger = document.querySelector(".hamburger");
   const closeMenuBtn = document.querySelector(".close-menu-btn");
   const menuItems = document.querySelectorAll(".navbar-menu a");
 
-  function handleHamburgerClick() {
-    navbarMenu.classList.toggle("active");
-    hamburger.style.display = "none";
+  if (!navbarMenu || !hamburger) return;
+
+  function openMenu() {
+    navbarMenu.classList.add("active");
+    hamburger.setAttribute("aria-expanded", "true");
+    navbarMenu.setAttribute("aria-hidden", "false");
   }
-  
-  function collapsePanel() {
-  navbarMenu.classList.remove("active");
-  setTimeout(() => {
-    handleScroll();
-    if (!navbarMenu.classList.contains("active")) {
-      hamburger.style.opacity = "0";
-      hamburger.style.display = "flex";
-      setTimeout(() => {
-        hamburger.style.opacity = "1";
-      }, 10);
-    }
-  }, 200);
+
+  function closeMenu() {
+    navbarMenu.classList.remove("active");
+    hamburger.setAttribute("aria-expanded", "false");
+    navbarMenu.setAttribute("aria-hidden", "true");
+  }
+
+  hamburger.addEventListener("click", () => {
+    navbarMenu.classList.contains("active") ? closeMenu() : openMenu();
+  });
+
+  if (closeMenuBtn) closeMenuBtn.addEventListener("click", closeMenu);
+  menuItems.forEach((item) => item.addEventListener("click", closeMenu));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeMenu();
+  });
 }
 
-//hamburger
-function handleScroll() {
-    let currentScrollPosition = window.pageYOffset;
-    let navbarHeight = navbar.offsetHeight;
+/* ─────────────────────────────────────────────────────────────
+   Fade-in-slide:
+   - If visible on load -> reveal immediately
+   - If not visible -> reveal when scrolled into view
+───────────────────────────────────────────────────────────── */
+function setupFadeInOnView() {
+  const elements = Array.from(document.querySelectorAll(".fade-in-slide"));
+  if (elements.length === 0) return;
 
-    if (window.innerWidth <= 768) {
-        if (currentScrollPosition < navbarHeight) {
-            hamburger.style.opacity = "0";
-            setTimeout(() => {
-                hamburger.style.display = "none";
-            }, 10);
-        } else {
-            if (!navbarMenu.classList.contains("active")) {
-                hamburger.style.display = "flex";
-                setTimeout(() => {
-                    hamburger.style.opacity = "1";
-                }, 10);
-            }
-        }
-    } else {
-        if (currentScrollPosition < navbarHeight) {
-            hamburger.style.opacity = "0";
-            setTimeout(() => {
-                hamburger.style.display = "none";
-            }, 10);
-        } else {
-            if (!navbarMenu.classList.contains("active")) {
-                hamburger.style.display = "flex";
-                setTimeout(() => {
-                    hamburger.style.opacity = "1";
-                }, 10);
-            }
-        }
-    }
-}
+  const reveal = (el) => el.classList.add("is-visible");
 
-window.addEventListener("scroll", handleScroll);
-window.addEventListener("resize", handleScroll);
+  const isInViewport = (el, threshold = 0.15) => {
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const visiblePx = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+    const minVisible = rect.height * threshold;
+    return visiblePx >= minVisible;
+  };
 
-handleScroll();
+  // Reveal visible elements immediately (so page loads nicely)
+  requestAnimationFrame(() => {
+    elements.forEach((el) => {
+      if (isInViewport(el)) reveal(el);
+    });
+  });
 
-menuItems.forEach((menuItem) => {
-  menuItem.addEventListener("click", collapsePanel);
-});
+  // Reveal remaining elements on scroll into view
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          reveal(entry.target);
+          obs.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.15 }
+    );
 
-closeMenuBtn.addEventListener("click", collapsePanel);
-
-hamburger.addEventListener("click", handleHamburgerClick);
-});
-
-//slide in effect
-$(window).on("scroll", function () {
-  $(".fade-in-slide").each(function () {
-    var sectionOffset = $(this).offset().top;
-    var windowHeight = $(window).height();
-    var scrollPosition = $(window).scrollTop();
-    
-    if (scrollPosition + windowHeight > sectionOffset + windowHeight / 4) {
-      $(this).css({
-        "opacity": 1,
-        "transform": "translateY(0)"
+    elements.forEach((el) => {
+      if (!el.classList.contains("is-visible")) observer.observe(el);
+    });
+  } else {
+    const onScroll = () => {
+      elements.forEach((el) => {
+        if (el.classList.contains("is-visible")) return;
+        if (isInViewport(el)) reveal(el);
       });
-    }
-  });
-});
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    onScroll();
+  }
+}
 
-document.addEventListener('DOMContentLoaded', function () {
-  const hamburger = document.querySelector('.hamburger');
-  const navbarMenu = document.querySelector('.navbar-menu');
-  const closeMenuBtn = document.querySelector('.close-menu-btn');
+/* ─────────────────────────────────────────────────────────────
+   Active nav highlighting
+───────────────────────────────────────────────────────────── */
+function setActiveNavbarItem() {
+  const currentPath = window.location.pathname.split("/").pop() || "index.html";
 
-  hamburger.addEventListener('click', function () {
-    navbarMenu.classList.add('open');
-  });
+  const allLinks = [
+    ...document.querySelectorAll(".navbar-links a"),
+    ...document.querySelectorAll(".navbar-menu a"),
+  ];
 
-  closeMenuBtn.addEventListener('click', function () {
-    navbarMenu.classList.remove('open');
+  allLinks.forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+
+    const url = new URL(href, window.location.href);
+    const linkPath = url.pathname.split("/").pop() || "index.html";
+
+    // Mark active if same page (ignoring hash differences for non-index pages)
+    const isActive = linkPath === currentPath && (currentPath !== "index.html" || !url.hash || url.hash === window.location.hash);
+    link.classList.toggle("active", isActive);
   });
-});
+}

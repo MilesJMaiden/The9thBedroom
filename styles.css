@@ -1,317 +1,262 @@
-﻿/* Add global styles and reset styles here */
+﻿/* ======================================================================
+   styles.css (FULL + UPDATED + DE-DUPED)
+   Goal:
+   - consistent rendering across devices
+   - NO duplicated arrow styling
+   - Home + Gallery (Swiper) arrows identical in look + behavior
+   - About section matches Projects/Blog width on small screens
+   - About stacks IMAGE above TEXT on small screens
+   - Filter buttons match navbar link styling + centered
+   - Footer social SVG icons always visible (inherit currentColor)
+   - FIX: consistent padding/spacing between multiple images in cards
+   Assumes your HTML uses:
+     Home:   <button class="slider-btn prev-btn"> ... </button>
+             <button class="slider-btn next-btn"> ... </button>
+     Gallery:<button class="slider-btn prev-btn swiper-button-prev"> ... </button>
+             <button class="slider-btn next-btn swiper-button-next"> ... </button>
+   ====================================================================== */
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL RESET + TOKENS
+───────────────────────────────────────────────────────────── */
 :root {
-  --primary-color: #333; /* Main color */
-  --secondary-color: #3498db; /* Accent color */
-  --background-color: #666; /* Background color */
-  --secondary-background-color: #999; /* Background color */
-  --text-color: #ffffff; /* Text color */
-  --alt-text-color: #000000; /* Alternative text color */
-  
-  /* Copy and paste the vars to implement
-  var(--primary-color);
-  var(--secondary-color);
-  var(--background-color);
-  var(--text-color);
-  var(--alt-text-color);
-  */
+  --primary-color: #333;
+  --secondary-color: #3498db;
+
+  --background-color: #666;
+  --secondary-background-color: #999;
+
+  --text-color: #ffffff;
+  --alt-text-color: #000000;
+
+  --nav-h: 60px;
+  --filter-h: 45px;
+
+  /* Spacing / typography */
+  --space-1: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
+  --space-2: clamp(0.75rem, 0.6rem + 0.6vw, 1rem);
+  --space-3: clamp(1rem, 0.8rem + 0.9vw, 1.5rem);
+  --space-4: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);
+  --space-5: clamp(2rem, 1.6rem + 2vw, 3rem);
+
+  --radius-1: 4px;
+  --radius-2: 10px;
+  --radius-3: 15px;
+
+  --shadow-1: 0 2px 5px rgba(0, 0, 0, 0.10);
+  --shadow-2: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.18);
+
+  --fs-0: clamp(0.95rem, 0.9rem + 0.2vw, 1.05rem);
+  --fs-1: clamp(1.05rem, 1rem + 0.4vw, 1.25rem);
+  --fs-2: clamp(1.35rem, 1.15rem + 0.9vw, 1.8rem);
+  --fs-3: clamp(1.8rem, 1.5rem + 1.6vw, 2.75rem);
+
+  /* NEW: image gaps inside cards */
+  --img-gap: 12px;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
-html, body {
-  overflow-x: hidden;
-  font-family: 'Roboto', Arial, sans-serif;
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body {
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: var(--fs-0);
+  line-height: 1.55;
 }
 
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a { color: inherit; }
+
+/* Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Shared container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HEADER / NAVBAR
+───────────────────────────────────────────────────────────── */
 header {
   background-color: var(--background-color);
   color: #fff;
   text-align: center;
   position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   z-index: 1000;
 }
 
-/* Custom section header styles */
-.section-header::before {
-  content: "";
-  display: block;
-  height: 50px; /* Adjust this value to match the padding-top value above */
-  margin-top: -50px; /* Adjust this value to match the height value above */
-}
-
-.section-header {
-  margin-top: 0;
-  margin-bottom: 1em;
-  padding-top: 25px; /* Adjust this value to control the space above the header */
-}
-
-/* Alternating section background colors */
-section:nth-child(2n) {
-  background-color: #f5f5f5;
-}
-
-section:nth-child(2n+1) {
-  background-color: #e0e0e0;
-}
-
-/* Update section styles */
-section {
-  position: relative;
-  z-index: 2; /* Increase z-index to ensure the content appears above the canvas */
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-}
-
-.grid-layout {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  grid-gap: 1rem;
-}
-
-/* ── BUTTONS ───────────────────────────────────────────────────────────── */
-
-/* Base style for all buttons */
-.btn,
-.view-all-btn {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: #fff;       /* white */
-  color: #000;                  /* black text */
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  border: 2px solid #000;       /* black outline */
-  border-radius: 4px;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-/* Hover state: invert to black background, white text */
-.btn:hover,
-.view-all-btn:hover {
-  background-color: #000;       /* black */
-  color: #fff;                  /* white text */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-/* If you still need the little shine-on-hover effect removed, drop the ::before rules entirely */
-/* (Otherwise just delete or comment out the following): */
-/*
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(255,255,255,0.1);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s ease-in-out;
-}
-
-.btn:hover::before {
-  transform: scaleX(1);
-}
-*/
-
-/* .center-btn and .fade-in-slide remain unchanged */
-.center-btn {
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.fade-in-slide {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.5s, transform 0.5s;
-}
-
-
-/* ── NAVBAR ─────────────────────────────────────────────────────────── */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   width: 100%;
-  background-color: #000;    /* true black */
-  padding: 0;
+  height: var(--nav-h);
+  line-height: var(--nav-h);
+
+  background-color: #000;
   margin: 0;
+  padding: 0;
   position: relative;
-  height: 60px;
-  line-height: 60px;
   z-index: 1000;
 }
 
-/* brand logo: svg + text */
+/* brand logo */
 .navbar .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;               /* space between icon & text */
+  gap: 0.5rem;
+
+  margin-left: 20px;
   color: #fff;
   text-decoration: none;
+
+  font-weight: 800;
   font-size: 2.75rem;
-  margin-left: 20px;
-  font-weight: bold;
   transition: text-shadow 0.3s ease;
 }
 
-/* constrain your SVG so it scales with the font-size */
 .navbar .brand-logo .logo-icon {
   width: 2.75rem;
   height: auto;
 }
 
-/* keep the text portion hoverable */
-.navbar .brand-logo .logo-text {
-  cursor: pointer;
+.navbar .brand-logo .logo-text { cursor: pointer; }
+
+@keyframes glowing {
+  0%, 100% { text-shadow: none; }
+  50% {
+    text-shadow:
+      0 0 1px rgba(255,255,255,0.5),
+      0 0  8px rgba(255,255,255,0.5),
+      0 0 12px rgba(255,255,255,0.5),
+      0 0 16px rgba(255,255,255,0.5);
+  }
 }
 
-/* subtle glow on hover */
-@keyframes glowing {
-  0%,100%   { text-shadow: none; }
-  50%       { text-shadow:
-                0 0 1px rgba(255,255,255,0.5),
-                0 0  8px rgba(255,255,255,0.5),
-                0 0 12px rgba(255,255,255,0.5),
-                0 0 16px rgba(255,255,255,0.5);
-             }
-}
 .navbar .brand-logo:hover {
   animation: glowing 5s infinite;
   animation-fill-mode: forwards;
 }
 
-/* ── LINKS ──────────────────────────────────────────────────────────── */
-/* container now expands to fill between logo and edge */
+/* primary links */
 .navbar-links {
   display: flex;
-  flex: 0 0 33.337%;;            /* grow to fill the space between logo and edge */
-  margin: 0;          /* eliminate any extra gap on the right */
+  margin: 0;
   padding: 0;
 }
 
-/* each link is an equal flex‐item, centered both ways */
 .navbar-links a {
-  flex: 1;            /* equal width for every button */
-  display: flex;      /* center its text */
+  display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;       /* full navbar height */
+
+  height: 100%;
+  padding: 0 1rem;
+
   color: #fff;
   background: transparent;
   text-decoration: none;
+
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 800;
   letter-spacing: 0.1em;
-  position: relative; /* for the underline pseudo‐element */
-  transition: background-color 0.3s ease, color 0.3s ease;
-  margin: 0;          /* ensure no stray margins */
+
+  position: relative;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* the full-width underline, hidden by default */
+/* underline spans full width */
 .navbar-links a::before {
   content: "";
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 33%;
+
+  width: 100%;
   height: 3px;
   background-color: #000;
+
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
-/* hover & active: white background, black text */
 .navbar-links a:hover,
 .navbar-links a.active {
   background-color: #fff;
   color: #000;
 }
 
-/* show the underline on hover or when “active” */
 .navbar-links a:hover::before,
 .navbar-links a.active::before {
   transform: scaleX(1);
 }
 
-
-/* ── HAMBURGER MENU ───────────────────────────────────────────────────────── */
+/* hamburger */
 .hamburger {
-  background-color: #000;                     /* black background */
+  background-color: #000;
   display: none;
   position: fixed;
   top: 15px;
   left: 15px;
   z-index: 999;
   cursor: pointer;
-  gap: 6px;
-  flex-direction: column;
-  justify-content: center;
-  font-size: 30px;
+
   border-radius: 4px;
   padding: 8px;
-  box-sizing: border-box;
-  transition: background-color 0.3s ease, opacity 1s ease-in-out;
-  outline: none;                              /* remove focus outline */
-  border: none;                               /* remove any border */
+  outline: none;
+  border: none;
+
+  transition: background-color 0.25s ease;
 }
 
-/* target the three bars inside your inline SVG */
-.hamburger svg g {
-  fill: #fff;                                 /* white bars by default */
-  transition: fill 0.3s ease;
-}
-
-/* force white bars by default */
 .hamburger svg rect {
   fill: #fff !important;
+  transition: fill 0.25s ease;
 }
 
-/* on hover, invert to black bars */
-.hamburger:hover svg rect {
-  fill: #000 !important;
-}
+.hamburger:hover { background-color: #fff; }
+.hamburger:hover svg rect { fill: #000 !important; }
+.hamburger:focus { outline: none; }
 
-/* hover state: invert background & bar colors */
-.hamburger:hover {
-  background-color: #fff;                     /* white background */
-}
-
-.hamburger:hover svg g {
-  fill: #000;                                 /* black bars on hover */
-}
-
-/* also remove outline if it ever appears on focus */
-.hamburger:focus {
-  outline: none;
-}
-
-
-
+/* mobile slide-in menu */
 .navbar-menu {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
+
   width: 250px;
   height: 100%;
+
   background-color: rgba(0, 0, 0, 0.9);
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 15px;
   padding: 15px;
+
   z-index: 999;
   transform: translateX(-100%);
   transition: transform 0.2s ease-in-out;
@@ -323,75 +268,175 @@ section {
 }
 
 .navbar-menu a {
-  color: white;
+  color: #fff;
   text-decoration: none;
   font-size: 1.1rem;
   display: block;
   width: 100%;
-  padding: 5px 15px;
+  padding: 8px 15px;
 }
 
+.navbar-menu a:hover { background-color: rgba(255, 255, 255, 0.2); }
+
 .close-menu-btn {
-  color: white;
+  color: #fff;
   font-size: 24px;
-  background-color: transparent;
+  background: transparent;
   border: none;
+
   position: absolute;
   top: 10px;
   right: 10px;
+
   cursor: pointer;
-  z-index: 1000;
-  transition: color 0.3s ease;
+  transition: color 0.25s ease;
 }
 
-.close-menu-btn:hover {
-  color: #f5f5f5;
+.close-menu-btn:hover { color: #f5f5f5; }
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION HEADERS + SECTIONS (FIXED: remove extra header gap)
+───────────────────────────────────────────────────────────── */
+
+/* Use scroll-margin instead of the old ::before offset hack */
+section {
+  scroll-margin-top: calc(var(--nav-h) + var(--space-2));
 }
 
-.navbar-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  width: 100%;
+/* Remove the old offset spacer entirely */
+.section-header::before {
+  content: none;
 }
 
-/* About home/slide */
+/* Headers should sit naturally inside the section padding */
+.section-header {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  text-align: center;
+}
+
+/* Alternating section backgrounds */
+section:nth-of-type(odd) { background-color: #e0e0e0; }
+section:nth-of-type(even) { background-color: #f5f5f5; }
+
+section {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+
+  /* This now becomes the ONLY top spacing between section start and header */
+  padding: var(--space-5) 0;
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 1rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BUTTONS (site-wide)
+───────────────────────────────────────────────────────────── */
+.btn,
+.view-all-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #fff;
+  color: #000;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #000;
+  border-radius: 4px;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* hover */
+.btn:hover,
+.view-all-btn:hover {
+  background-color: #000;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+
+/* keyboard accessibility */
+.btn:focus-visible,
+.view-all-btn:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 3px;
+}
+
+/* click feedback */
+.btn:active,
+.view-all-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.center-btn {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REVEAL / FADE-IN (safe defaults + JS-enhanced animation)
+   - Visible by default so page never "blanks" if JS fails.
+   - Hidden ONLY when html has class="js".
+   - JS adds .is-visible to reveal (in-viewport on load + on scroll).
+───────────────────────────────────────────────────────────── */
+
+/* Visible by default (no JS / JS failed) */
+.fade-in-slide,
+[data-sr] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Only hide + animate when JS is active */
+html.js .fade-in-slide,
+html.js [data-sr] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms ease, transform 500ms ease;
+  will-change: opacity, transform;
+}
+
+/* Revealed state (JS adds this class) */
+html.js .fade-in-slide.is-visible,
+html.js [data-sr].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html.js .fade-in-slide,
+  html.js [data-sr] {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* (Optional) keep only if you actually use animation-name: fadeIn somewhere */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HOME SLIDER / HERO
+───────────────────────────────────────────────────────────── */
 #home {
   position: relative;
   height: 100vh;
   overflow: hidden;
-  margin-top: -60px;
-}
-
-.name-role {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  color: white;
-  z-index: 1;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  padding: 1rem;
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.name-role h1 {
-  font-size: 3rem;
-  margin: 0;
-  padding-bottom: 0.5rem;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.name-role h3 {
-  font-size: 1.5rem;
-  margin: 0;
-  padding-top: 0.5rem;
-  color: white;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  margin-top: calc(-1 * var(--nav-h));
 }
 
 .slider {
@@ -410,47 +455,69 @@ section {
   opacity: 0;
 }
 
-.slide.active {
-  opacity: 1;
+.slide.active { opacity: 1; }
+
+.name-role {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+
+  transform: translate(-50%, -50%);
+  text-align: center;
+
+  color: #fff;
+  padding: 1rem;
+
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.name-role h1 {
+  font-size: 3rem;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-/* ── SLIDE-IN CONTENT ───────────────────────────────────────────────────────── */
+.name-role h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  padding-top: 0.5rem;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
 
-/* base: hidden, shifted down */
+/* slide text */
 .slide-content {
   position: absolute;
   bottom: 10%;
   left: 2%;
-  max-width: 40%;                           /* a little wider on large screens */
-  padding: 1.5rem 2rem;                     /* more breathing room */
-  background: rgba(0, 0, 0, 0.5);           /* slightly darker overlay */
-  border-radius: 0 8px 8px 0;               /* slightly tighter rounding */
+  max-width: 40%;
+  padding: 1.5rem 2rem;
+
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0 8px 8px 0;
+
   color: #fff;
   opacity: 0;
   transform: translateY(20px);
-  transition: 
-    opacity 0.6s ease-out, 
-    transform 0.6s ease-out;
-  pointer-events: none;                     /* ignore clicks when hidden */
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  pointer-events: none;
 }
 
-/* when its parent gets .active, fade/slide into place */
 .slide.active .slide-content {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
 
-/* typography tweaks */
 .slide-content h1 {
   font-size: 2.5rem;
   margin: 0 0 0.5rem;
@@ -463,54 +530,86 @@ section {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
-
-
-/* ── PREV / NEXT BUTTONS ───────────────────────────────────────────────────── */
-
-/* Gallery & Home Slider Prev/Next Buttons */
+/* ─────────────────────────────────────────────────────────────
+   CONSISTENT PREV/NEXT BUTTONS (HOME + GALLERY)
+───────────────────────────────────────────────────────────── */
 .slider-btn {
-  --bg: #000;   /* button bg */
-  --fg: #fff;   /* arrow color */
+  --bg: #000;
+  --fg: #fff;
 
   position: absolute;
   top: 50%;
+
   width: 44px;
   height: 44px;
+
   background: var(--bg);
   color: var(--fg);
+
   border: none;
   border-radius: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   transform: translateY(-50%);
   cursor: pointer;
-  /* smoother, longer fade on hover */
+
   transition:
-    background 0.5s ease-in-out,
-    color 0.5s ease-in-out,
-    box-shadow 0.5s ease-in-out;
-  z-index: 2;
+    background 0.35s ease-in-out,
+    color 0.35s ease-in-out,
+    box-shadow 0.35s ease-in-out,
+    transform 0.35s ease-in-out;
+
+  z-index: 5;
 }
 
-/* force the SVG arrow to inherit the button’s color */
-.slider-btn svg path {
-  fill: currentColor !important;
-}
+/* SVG arrow inherits button color */
+.slider-btn svg path { fill: currentColor !important; }
 
-/* position overrides */
-.prev-btn { left: 1%; }
-.next-btn { right: 1%; }
-
-/* hover: invert & lift */
+/* Hover invert */
 .slider-btn:hover {
   background: var(--fg);
   color: var(--bg);
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transform: translateY(-50%) translateY(-1px);
 }
 
+/* Shared positioning for ANY carousel using prev-btn / next-btn */
+.prev-btn { left: 1%; }
+.next-btn { right: 1%; }
 
-/* ── Slide Indicator ───────────────────────────────────────────────────────── */
+/* --- Swiper reset (position + remove default arrows) --- */
+.swiper-container { position: relative; }
+
+.swiper-button-prev,
+.swiper-button-next {
+  margin-top: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  display: none !important;
+}
+
+/* Force Swiper nav color to match Home (white idle, black hover) */
+#gallery .swiper-button-prev.slider-btn,
+#gallery .swiper-button-next.slider-btn {
+  color: #fff !important;
+}
+
+#gallery .swiper-button-prev.slider-btn:hover,
+#gallery .swiper-button-next.slider-btn:hover {
+  color: #000 !important;
+}
+
+/* ── Slide Indicator ───────────────────────────────────────── */
 .slide-indicator {
   position: absolute;
   bottom: 3%;
@@ -519,68 +618,64 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  z-index: 2;
 }
 
-/* base dot */
 .dot {
   width: 10px;
   height: 10px;
-  background-color: #bbb;    /* inactive */
+  background-color: #bbb;
   border-radius: 50%;
   display: inline-block;
   margin: 0 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.25s ease;
 }
 
-/* hover state for any dot */
-.dot:hover {
-  background-color: #888;    /* grey on hover */
-}
+.dot:hover { background-color: #888; }
+.dot.active { background-color: #fff; }
 
-/* active slide indicator */
-.dot.active {
-  background-color: #fff;    /* white when active */
-}
-}
-
-
-/* ── ABOUT SECTION ───────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   ABOUT (UPDATED: width consistency + responsive stacking)
+───────────────────────────────────────────────────────────── */
 #about {
-  padding: 6rem 2rem;           /* more top/bottom breathing room */
+  padding: 6rem 0; /* vertical rhythm consistent with other sections */
 }
 
 #about h2 {
   text-align: center;
-  margin-bottom: 2rem;          /* extra space under the heading */
+  margin-bottom: 2rem;
   font-size: 2.5rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #333;
 }
 
+/* Match Projects/Blog overall page width (same as .container) */
 .about-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px; /* same as .container */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-left: 2rem;
-  margin-right: 2rem; 
-  gap: 4rem;                    /* larger gap between each about-item */
+  gap: 4rem;
 }
 
 .about-item {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 4rem;          /* more space under each duo */
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
 }
 
+/* Equal width columns */
 .about-text,
 .about-image {
-  flex: 1;
-  padding: 2rem;                /* double the inner padding */
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;    /* IMPORTANT: removes extra padding that made About feel wider */
+  opacity: 0;    /* keep your reveal animation behavior */
   box-sizing: border-box;
-  opacity: 0;
 }
 
 .about-text {
@@ -595,31 +690,29 @@ section {
 
 .about-text h3 {
   font-size: 1.8rem;
-  margin-bottom: 1rem;          /* more room under subheadings */
+  margin-bottom: 1rem;
   width: 100%;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .about-text p {
   text-align: justify;
-  margin-bottom: 1.5rem;        /* space after paragraphs if stacked */
+  margin: 0;
 }
 
-.about-image {
-  text-align: center;
-}
+.about-image { text-align: center; }
 
 .about-image img {
   width: 100%;
   height: auto;
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .about-image img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-3);
 }
 
 /* retain your existing reveal animations */
@@ -627,44 +720,67 @@ section {
 .right { text-align: right; }
 
 .about-text.left.animated,
-.about-image.right.animated {
-  animation: fadeInLeft 1s ease-out forwards;
-}
+.about-image.right.animated { animation: fadeInLeft 1s ease-out forwards; }
+
 .about-text.right.animated,
-.about-image.left.animated {
-  animation: fadeInRight 1s ease-out forwards;
-}
+.about-image.left.animated { animation: fadeInRight 1s ease-out forwards; }
 
 @keyframes fadeInLeft {
   from { opacity: 0; transform: translateX(-50px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
 @keyframes fadeInRight {
   from { opacity: 0; transform: translateX(50px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-
-/* Projects section */
-#projects {
-  padding: 2rem;
-}
+/* ─────────────────────────────────────────────────────────────
+   PROJECTS (HOME GRID)
+───────────────────────────────────────────────────────────── */
+#projects { padding: 2rem; }
 
 #projects h2 {
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.project {
-  text-align: center;
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1rem;
+  margin: 0 1rem;
 }
+
+#projects .project-card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: var(--radius-1);
+  box-shadow: var(--shadow-2);
+  transition: background-image 1s ease-in-out, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+#projects .project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+  background-image: linear-gradient(135deg, #6EE7B7 0%, #FFF5B8 100%);
+  background-size: 200% 200%;
+  animation: gradient-animation 5s infinite;
+}
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.project { text-align: center; }
 
 .project img {
   width: 100%;
-  height: auto;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  border-radius: var(--radius-1);
+  box-shadow: var(--shadow-1);
 }
 
 .project h3 {
@@ -672,54 +788,16 @@ section {
   margin-bottom: 0.5rem;
 }
 
-.project p {
-  margin-bottom: 1rem;
-}
+.project p { margin-bottom: 1rem; }
 
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  grid-gap: 1rem;
-  margin: 0 1rem; /* Add a left and right margin to the blog-container */
-}
-
-.project-card {
-  background-color: #fff; /* Change this to the desired background color */
-  padding: 20px;
-  border-radius: 4px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-image 1s ease-in-out;
-}
-
-.project-card:hover {
-  background-image: linear-gradient(135deg, #6EE7B7 0%, #FFF5B8 100%);
-  background-size: 200% 200%;
-  animation: gradient-animation 5s infinite;
-}
-
-@keyframes gradient-animation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Resume section */
+/* ─────────────────────────────────────────────────────────────
+   RESUME
+───────────────────────────────────────────────────────────── */
 #resume {
   padding: 50px 0;
   background-color: #f5f5f5;
   border-top: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 30px;
 }
 
 .pdf-container {
@@ -746,7 +824,7 @@ section {
   text-transform: uppercase;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  transition: background-color 0.25s ease, transform 0.25s ease;
   text-decoration: none;
 }
 
@@ -755,12 +833,11 @@ section {
   transform: translateY(-3px);
 }
 
-/* Gallery section */
-#gallery {
-  padding: 2rem;
-}
+/* ─────────────────────────────────────────────────────────────
+   GALLERY (SWIPER)
+───────────────────────────────────────────────────────────── */
+#gallery { padding: 2rem; }
 
-/* Swiper custom styles */
 .swiper-container {
   width: 100%;
   overflow: hidden;
@@ -771,32 +848,19 @@ section {
   display: flex;
   justify-content: center;
   align-items: center;
+
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
+  border-radius: var(--radius-1);
+  transition: background-color 0.25s ease;
 }
 
-.swiper-slide:hover {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-.swiper-slide::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 4px;
-}
+.swiper-slide:hover { background-color: rgba(0, 0, 0, 0.3); }
 
 .img-container {
   position: relative;
   width: auto;
-  height: 200px; /* desired image height */
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -807,103 +871,46 @@ section {
   width: auto;
   height: 100%;
   object-fit: contain;
-  display: block;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 4px;
+  border-radius: var(--radius-1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .swiper-slide:hover img {
   transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-3);
   z-index: 1;
 }
 
-.swiper-slide:hover::before {
-  opacity: 1;
-}
-
-/* remove default Swiper arrows */
-.swiper-button-prev::after,
-.swiper-button-next::after {
-  display: none;
-}
-
-/* ── unified slider-btn styling ───────────────────────────────────────── */
-.swiper-button-prev.slider-btn,
-.swiper-button-next.slider-btn {
-  --bg: #000;    /* button background */
-  --fg: #fff;    /* arrow color */
-
-  position: absolute;
-  top: calc(50% + 25px);
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  background: var(--bg);
-  color: var(--fg);
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
-  z-index: 2;
-}
-
-/* force SVG arrow to use currentColor */
-.swiper-button-prev.slider-btn svg path,
-.swiper-button-next.slider-btn svg path {
-  fill: currentColor !important;
-}
-
-/* position overrides */
-.swiper-button-prev.slider-btn { left: 1%; }
-.swiper-button-next.slider-btn { right: 1%; }
-
-/* hover: invert & lift */
-.swiper-button-prev.slider-btn:hover,
-.swiper-button-next.slider-btn:hover {
-  background: var(--fg);
-  color: var(--bg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-
-/* Blog Section */
-#blog {
-  padding: 2rem;
-}
+/* ─────────────────────────────────────────────────────────────
+   BLOG
+───────────────────────────────────────────────────────────── */
+#blog { padding: 2rem; }
 
 .blog-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  grid-gap: 1rem;
-  margin: 0 1rem; /* Add a left and right margin to the blog-container */
+  gap: 1rem;
+  margin: 0 1rem;
 }
 
 .blog-post {
   position: relative;
   padding: 3rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  color: white;
+  box-shadow: var(--shadow-1);
+  color: #fff;
+  border-radius: var(--radius-1);
+  overflow: hidden;
 }
 
 .blog-post-image {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-size: cover;
   background-position: center;
   opacity: 0.3;
-  transition: opacity 0.3s;
+  transition: opacity 0.25s ease;
   pointer-events: none;
-  border-radius: 5px;
+  border-radius: var(--radius-1);
 }
 
 .blog-post-content {
@@ -911,40 +918,33 @@ section {
   z-index: 1;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 1rem;
-  border-radius: 5px;
+  border-radius: var(--radius-1);
 }
 
-.blog-post:hover .blog-post-image {
-  opacity: 1;
-}
+.blog-post:hover .blog-post-image { opacity: 1; }
 
 .view-all {
   display: inline-block;
   text-decoration: none;
-  color: white;
+  color: #fff;
   background-color: #333;
   padding: 8px 12px;
   border-radius: 5px;
-  transition: background-color 0.3s;
+  transition: background-color 0.25s ease, transform 0.25s ease;
   margin-top: 1rem;
   margin-left: 50%;
-  transform: translateX(-50%); /* Move the button to the left by half of its width */
+  transform: translateX(-50%);
 }
 
 .view-all:hover {
   background-color: #555;
+  transform: translateX(-50%) translateY(-1px);
 }
 
-/* Contact section */
-#contact {
-  padding: 50px 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+/* ─────────────────────────────────────────────────────────────
+   CONTACT
+───────────────────────────────────────────────────────────── */
+#contact { padding: 50px 0; }
 
 .contact-content {
   text-align: center;
@@ -955,17 +955,11 @@ section {
   border-radius: 5px;
 }
 
-.contact-content h2 {
-  margin-bottom: 30px;
-}
+.contact-content h2 { margin-bottom: 30px; }
 
-.contact-form {
-  margin-top: 20px;
-}
+.contact-form { margin-top: 20px; }
 
-.form-group {
-  margin-bottom: 20px;
-}
+.form-group { margin-bottom: 20px; }
 
 .form-group label {
   display: block;
@@ -983,7 +977,6 @@ section {
   background-color: #fff;
   color: #333;
   font-size: 1rem;
-  box-sizing: border-box;
 }
 
 .form-group textarea {
@@ -1000,8 +993,9 @@ section {
   text-transform: uppercase;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  transition: background-color 0.25s ease, transform 0.25s ease;
   margin-top: 10px;
+  border: none;
 }
 
 .submit-btn:hover {
@@ -1009,7 +1003,9 @@ section {
   transform: translateY(-3px);
 }
 
-/* Footer styles */
+/* ─────────────────────────────────────────────────────────────
+   FOOTER + SOCIAL (consistent across ALL pages)
+───────────────────────────────────────────────────────────── */
 footer {
   background-color: #000;
   padding: 20px 0;
@@ -1017,202 +1013,265 @@ footer {
   text-align: center;
 }
 
-.footer-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer-content p {
-  margin: 0;
-  padding: 10px 0;
-}
-
-/* Footer social icons */
 .social-media-links {
   list-style: none;
   display: flex;
-  justify-content: center;  /* center the row */
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
   padding: 0;
   margin: 0;
 }
-.social-media-links li {
-  margin: 0 8px;
-}
-.social-media-links a {
-  color: #fff;               /* default white */
-  font-size: 1.5rem;         /* adjust icon size if needed */
-  transition: color 0.3s ease;
+
+.social-media-links li { margin: 0; }
+
+/* IMPORTANT: kill underlines everywhere for footer icons */
+.social-media-links a,
+.social-media-links a:hover,
+.social-media-links a:focus,
+.social-media-links a:active,
+.social-media-links a:visited {
+  text-decoration: none !important;
+  text-decoration-color: transparent;
+  text-underline-offset: 0;
 }
 
-/* On hover, change the anchor’s color – the <i> inherits it */
+.social-media-links a {
+  color: #fff;
+  font-size: 1.5rem;
+  transition: color 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* SVG icons (other pages) */
+.social-media-links a .icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Ensure SVG inherits link color */
+.social-media-links a svg { fill: currentColor; }
+.social-media-links a svg path { fill: currentColor; }
+
+/* Hover colors */
 .social-media-links a.linkedin:hover  { color: #0A66C2; }
 .social-media-links a.github:hover    { color: #181717; }
 .social-media-links a.twitter:hover   { color: #1DA1F2; }
 .social-media-links a.instagram:hover { color: #E4405F; }
 .social-media-links a.facebook:hover  { color: #1877F2; }
 
-.social-media-links img,
-.icon {
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
-  padding: 5px;
-  transition: fill 0.3s;
-}
-
-
-/* GALLERY PAGE */
+/* ─────────────────────────────────────────────────────────────
+   GALLERY PAGE (GRID PAGE)
+───────────────────────────────────────────────────────────── */
 .gallery-container {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Set the default layout for larger screens */
+  grid-template-columns: repeat(4, 1fr);
   border-radius: 5px;
   padding: 2rem;
   padding-top: 0;
+  gap: 1rem;
 }
 
 .gallery-item {
   position: relative;
   overflow: hidden;
   border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s;
+  box-shadow: var(--shadow-2);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
   cursor: pointer;
   padding: 1rem;
 }
 
 .gallery-item:hover {
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-3);
+  transform: translateY(-2px);
 }
 
 .gallery-item img {
   width: 100%;
-  height: auto;
   object-fit: cover;
   border-radius: 5px;
-  transition: transform 0.3s, opacity 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  box-shadow: var(--shadow-1);
 }
 
 .gallery-item:hover img {
-  transform: scale(1.1);
-  opacity: 0.7;
+  transform: scale(1.08);
+  opacity: 0.75;
 }
 
 .overlay {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.25s ease;
 }
 
-.gallery-item:hover .overlay {
-  opacity: 1;
-}
+.gallery-item:hover .overlay { opacity: 1; }
 
 .overlay p {
-  color: white;
+  color: #fff;
   font-size: 1.5rem;
   margin: 0;
-  padding: 0;
   text-align: center;
 }
 
-/* Filter Buttons/Gallery */
+/* ─────────────────────────────────────────────────────────────
+   FILTER BAR (GALLERY PAGE) — UPDATED to match navbar + centered
+───────────────────────────────────────────────────────────── */
 #filter-bar {
   position: static;
   width: 100%;
-  height: 45px;
+  height: var(--filter-h);
   z-index: 3;
-  /* Add any other styles for the filter bar */
 }
 
-#filter-bar.sticky {
-  position: fixed;
-}
+/* Keep your JS hooks working:
+   - #filter-bar.sticky (older)
+   - .fixed-filter (newer)
+*/
+#filter-bar.sticky { position: fixed; }
 
+/* Centered bar that visually matches navbar */
 .filter-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: sticky;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  padding: 13px 13px;
+
+  gap: 0;               /* navbar links are flush */
+  flex-wrap: wrap;      /* wrap on narrow widths */
+
+  width: 100%;
+  min-height: var(--filter-h);
+
+  padding: 0;           /* navbar links have no extra vertical padding */
+  background-color: #000;
   z-index: 10;
-  background-color: #333;
-  margin-top: 0;
 }
 
+/* Fixed state (your JS uses this) */
 .fixed-filter {
   position: fixed;
   left: 0;
   top: 0;
   width: 100%;
-  background-color: rgba(51, 51, 51, 0.8);
+  background-color: #000;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-1);
 }
 
+/* Buttons styled like navbar links */
 .filter-btn {
-  color: white;
-  text-decoration: none;
-  font-size: 1.1rem;
-  line-height: inherit;
-  position: relative;
+  appearance: none;
+  border: none;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: var(--filter-h);
   padding: 0 1rem;
-  transition: color 0.3s ease;
-  display: inline-block;
-  font-weight: bold;
-  background-color: #333;
-}
 
-.filter-btn:hover {
-  background-color: #444;
-}
-
-.filter-btn-active {
-  background-color: #666;
   color: #fff;
+  text-decoration: none;
+
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+
+  position: relative;
+  cursor: pointer;
+
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease;
 }
 
-.sticky-filter-container {
-  top: 0;
-  bottom: auto;
+/* underline spans full width (same as navbar) */
+.filter-btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 3px;
+  background-color: #000;
+
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
 }
 
-/* Project list page */
-.project-card {
-  background: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* hover/active invert like navbar */
+.filter-btn:hover,
+.filter-btn.filter-btn-active,
+.filter-btn.highlighted {
+  background-color: #fff;
+  color: #000;
+}
+
+.filter-btn:hover::before,
+.filter-btn.filter-btn-active::before,
+.filter-btn.highlighted::before {
+  transform: scaleX(1);
+}
+
+/* keyboard focus */
+.filter-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 3px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PROJECT LIST PAGE (projects.html) + BLOG LIST PAGE (blog.html)
+   (Same card layout + SAME hover colour shift as Projects page)
+───────────────────────────────────────────────────────────── */
+.project-card.left,
+.project-card.right {
+  background: #fff;
+  box-shadow: var(--shadow-2);
   margin-bottom: 2rem;
+
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+
   padding: 2rem;
+  border-radius: var(--radius-2);
+
+  /* ADD: match projects-page hover transitions */
+  transition:
+    background-image 1s ease-in-out,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.project-card img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 10px;
-  transition: transform 0.3s;
-  margin: 0 auto;
+/* ADD: identical hover behaviour to the projects grid cards */
+.project-card.left:hover,
+.project-card.right:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+
+  background-image: linear-gradient(135deg, #6EE7B7 0%, #FFF5B8 100%);
+  background-size: 200% 200%;
+  animation: gradient-animation 5s infinite;
 }
 
-.project-card img:hover {
-  transform: scale(1.03);
+/* If you already have this keyframes earlier in the file, DO NOT duplicate it.
+   Keep just one copy in your stylesheet. */
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .project-image {
@@ -1230,12 +1289,24 @@ footer {
   justify-content: center;
 }
 
-.project-card h3 {
-  margin-bottom: 1rem;
+.project-card.left .project-image { order: 1; }
+.project-card.left .project-info  { order: 2; }
+.project-card.right .project-image { order: 2; }
+.project-card.right .project-info  { order: 1; }
+
+/* Images inside the list cards */
+.project-card.left img,
+.project-card.right img {
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-2);
+  transition: transform 0.25s ease;
+  margin: 0 auto;
 }
 
-.project-card p {
-  margin-bottom: 2rem;
+.project-card.left img:hover,
+.project-card.right img:hover {
+  transform: scale(1.03);
 }
 
 .project-button {
@@ -1245,50 +1316,30 @@ footer {
   color: #fff;
   text-decoration: none;
   border-radius: 5px;
-  transition: background 0.3s;
+  transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .project-button:hover {
   background-color: #333;
+  transform: translateY(-1px);
 }
 
-.project-card.left .project-image {
-  order: 1;
-}
 
-.project-card.left .project-info {
-  order: 2;
-}
-
-.project-card.right .project-image {
-  order: 2;
-}
-
-.project-card.right .project-info {
-  order: 1;
-}
-
-.project-page-text.left.animated,
-.project-page-image.right.animated {
-  animation: fadeInLeft 1s ease-out forwards;
-}
-
-.project-page-text.right.animated,
-.project-page-image.left.animated {
-  animation: fadeInRight 1s ease-out forwards;
-}
-
-/* Lightbox */
+/* ─────────────────────────────────────────────────────────────
+   LIGHTBOX
+───────────────────────────────────────────────────────────── */
 #lightbox {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
+
   background-color: rgba(0, 0, 0, 0.8);
   display: none;
+
   align-items: center;
   justify-content: center;
+
   z-index: 1000;
 }
 
@@ -1296,17 +1347,11 @@ footer {
   max-width: 90%;
   max-height: 80%;
   object-fit: contain;
-  border: 2px solid white;
+  border: 2px solid #fff;
   cursor: default;
 }
 
-body.lightbox-open {
-  overflow: hidden;
-}
-
-body.no-scroll {
-  overflow-y: scroll;
-}
+body.lightbox-open { overflow: hidden; }
 
 .lightbox-content {
   position: relative;
@@ -1317,20 +1362,15 @@ body.no-scroll {
   height: 100%;
 }
 
-.lightbox-header {
-  color: #fff;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  margin-bottom: 15px;
-  cursor: default;
-}
-
+.lightbox-header,
 .lightbox-caption {
   color: #fff;
   font-family: Arial, sans-serif;
   text-align: center;
   cursor: default;
 }
+
+.lightbox-header { margin-bottom: 15px; }
 
 .lightbox-caption h3 {
   font-size: 18px;
@@ -1350,107 +1390,96 @@ body.no-scroll {
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.25s ease;
+  background: transparent;
+  border: none;
 }
 
-.close:hover {
-  color: #ff0000;
-}
+.close:hover { color: #ff0000; }
 
-/* MEDIA QUERIES */
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────────── */
 @media screen and (min-width: 768px) and (max-width: 1023px) {
-	
+  .navbar .brand-logo { font-size: 1.6rem; }
+  .navbar-links a { padding: 0 0.25rem; font-size: 0.95rem; }
 
-	
-  .navbar .brand-logo {
-    font-size: 0.5rem;
-  }
+  .name-role h1, .slide-content h1 { font-size: 2.5rem; }
+  .name-role h3, .slide-content p { font-size: 1.25rem; }
 
-  .navbar-links a {
-    padding: 0 0.01rem;
-  }
-
-  .name-role h1,
-  .slide-content h1 {
-    font-size: 2.5rem;
-  }
-
-  .name-role h3,
-  .slide-content p {
-    font-size: 1.25rem;
-  }
-
-  .gallery-container {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .blog-container {
-    grid-template-columns: 1fr;
-  }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  } 
+  .gallery-container { grid-template-columns: repeat(3, 1fr); }
+  .blog-container { grid-template-columns: 1fr; }
+  .projects-grid { grid-template-columns: 1fr; }
 }
 
-/* For tablet screens */
 @media screen and (max-width: 1024px) {
-	
-	
-  .navbar .brand-logo {
-    font-size: 1.6rem;
+  .navbar .brand-logo { font-size: 1.6rem; }
+  .navbar-links { display: none; }
+  .hamburger { display: inline-flex; }
+
+  .slide-content {
+    max-width: 85%;
+    left: 0;
+    border-radius: 0;
   }
 
-  .navbar-links a {
-    padding: 0 0.01rem;
+  /* ABOUT: stack image above text on small widths */
+  .about-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
   }
 
-  .grid-item {
-    flex: 0 0 calc(33.333% - 1rem); /* 3 columns on tablet screens */
+  /* Force image first, text second (regardless of left/right alternation) */
+  .about-image { order: 1; }
+  .about-text  { order: 2; }
+
+  /* Ensure both take full width */
+  .about-image,
+  .about-text {
+    width: 100%;
   }
 
-  .blog-container {
-    grid-template-columns: 1fr;
+  /* Optional: better readability on narrow screens */
+  .about-text p { text-align: left; }
+
+  .blog-container { grid-template-columns: 1fr; }
+  .projects-grid { grid-template-columns: 1fr; }
+
+  /* Project list page columns stack (keeps your layout readable) */
+  .project-image,
+  .project-info {
+    flex-basis: 100%;
+    max-width: 100%;
   }
 
-  .blog-container {
-    grid-template-columns: 1fr;
-  }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
+  .project-info { padding: 1.5rem 0 0; }
 }
 
-/* For larger screens */
 @media screen and (min-width: 1025px) {
-  .navbar .brand-logo {
-    font-size: 2.75rem;
-  }
-
-  .gallery-container {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-
+  .navbar .brand-logo { font-size: 2.75rem; }
+  .gallery-container { grid-template-columns: repeat(4, 1fr); }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
+@media (max-width: 767px) {
+  .slider-btn { width: 40px; height: 40px; }
+  .swiper-button-prev, .swiper-button-next { width: 40px !important; height: 40px !important; }
+
+  /* Filter buttons remain centered and wrap */
+  .filter-btn {
+    padding: 0 0.75rem;
+    font-size: 0.95rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+
+  /* Slightly tighter image gap on very small screens */
+  :root { --img-gap: 10px; }
 }
 
-/* a gentler pulsating glow for the SVG */
+/* ─────────────────────────────────────────────────────────────
+   SVG glow for logo icon (kept)
+───────────────────────────────────────────────────────────── */
 @keyframes glowing-filter {
-  0%, 100% {
-    filter: drop-shadow(0 0 0 rgba(255,255,255,0.5));
-  }
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255,255,255,0.5)); }
   50% {
     filter:
       drop-shadow(0 0 1px rgba(255,255,255,0.5))
@@ -1460,9 +1489,6 @@ body.no-scroll {
   }
 }
 
-/* Apply the animation on hover */
 .navbar .brand-logo:hover .logo-icon {
   animation: glowing-filter 5s infinite;
 }
-
-

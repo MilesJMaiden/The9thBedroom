@@ -61,122 +61,122 @@
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
-<header>
-  <nav class="navbar" role="navigation">
-    <!-- logo + text -->
-    <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
-      <img src="images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
-      <span class="logo-text">9TH BEDROOM</span>
-    </a>
 
-    <!-- primary nav links (flex:1 so they stretch out) -->
-    <div class="navbar-links">
-      <a href="#home" class="active">Home</a>
-      <a href="#about">About</a>
-      <a href="#projects">Projects</a>
-      <a href="#gallery">Portfolio</a>
-      <a href="cv.html">Contact</a>
-    </div>
+  <header>
+    <nav class="navbar" role="navigation">
+      <!-- logo + text -->
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
 
-    <!-- hamburger toggle -->
-    <button
-      class="hamburger"
-      type="button"
-      aria-label="Toggle menu"
-      aria-expanded="false"
-      aria-controls="navbar-menu"
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-        <rect y="2"  width="24" height="2" rx="1"/>
-        <rect y="11" width="24" height="2" rx="1"/>
-        <rect y="20" width="24" height="2" rx="1"/>
-      </svg>
-    </button>
+      <!-- primary nav links -->
+      <div class="navbar-links">
+        <a href="#home" class="active">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="cv.html">Contact</a>
+      </div>
 
-    <!-- slide-in mobile menu -->
-    <div
-      id="navbar-menu"
-      class="navbar-menu"
-      role="menu"
-      aria-hidden="true"
-    >
-      <a role="menuitem" href="#home">Home</a>
-      <a role="menuitem" href="#about">About</a>
-      <a role="menuitem" href="#projects">Projects</a>
-      <a role="menuitem" href="#gallery">Gallery</a>
-      <a role="menuitem" href="cv.html">CV</a>
-      <button class="close-menu-btn" aria-label="Close menu">&times;</button>
-    </div>
-  </nav>
-</header>
+      <!-- hamburger toggle -->
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
 
+      <!-- slide-in mobile menu -->
+      <div
+        id="navbar-menu"
+        class="navbar-menu"
+        role="menu"
+        aria-hidden="true"
+      >
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Gallery</a>
+        <a role="menuitem" href="cv.html">CV</a>
+        <button class="close-menu-btn" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
 
   <main id="main">
-<!-- Home Slider -->
-<section id="home">
 
-  <div class="slider">
-    <div class="name-role">
-      <h1><span id="typed-name"></span></h1>
-      <h3><span id="typed-role"></span></h3>
-    </div>
+    <!-- Home Slider -->
+    <section id="home">
+      <div class="slider">
+        <div class="name-role">
+          <h1><span id="typed-name"></span></h1>
+          <h3><span id="typed-role"></span></h3>
+        </div>
 
-    <button class="slider-btn prev-btn" aria-label="Previous slide">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
-      </svg>
-    </button>
-    <button class="slider-btn next-btn" aria-label="Next slide">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
-      </svg>
-    </button>
+        <!-- HOME slider arrows (keep prev-btn/next-btn) -->
+        <button class="slider-btn prev-btn" aria-label="Previous slide" type="button">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
+          </svg>
+        </button>
+        <button class="slider-btn next-btn" aria-label="Next slide" type="button">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
+          </svg>
+        </button>
 
-    <div class="slide active" style="background-image: url('images/BeatBoxVRCover2.png');">
-      <div class="slide-content">
-        <h1>BeatBox VR</h1>
-        <p data-text='An immersive drumming experience for all, "BeatBox-VR" lets you play a full drum set in VR.'></p>
+        <div class="slide active" style="background-image: url('images/BeatBoxVRCover2.png');">
+          <div class="slide-content">
+            <h1>BeatBox VR</h1>
+            <p data-text='An immersive drumming experience for all, "BeatBox-VR" lets you play a full drum set in VR.'></p>
+          </div>
+        </div>
+
+        <div class="slide" style="background-image: url('images/Saime1.png');">
+          <div class="slide-content">
+            <h1>SAIME</h1>
+            <p data-text='A VR Unity simulation in which MARL Agents are deployed to LLM-driven procedurally generated rooms.'></p>
+          </div>
+        </div>
+
+        <div class="slide" style="background-image: url('images/InfluxBanner2.png');">
+          <div class="slide-content">
+            <h1>Influx</h1>
+            <p data-text='Influx is a top-down, orthographic Unity simulation with procedurally generated rooms and emergent multi-agent behaviors.'></p>
+          </div>
+        </div>
+
+        <div class="slide" style="background-image: url('images/MountainTerrain.png');">
+          <div class="slide-content">
+            <h1>Project: World χάος</h1>
+            <p data-text='A hybrid terrain-generation system that combines noise-based algorithms.'></p>
+          </div>
+        </div>
+
+        <div class="slide" style="background-image: url('images/MPScene1.png');">
+          <div class="slide-content">
+            <h1>Midnight At The Pagoda</h1>
+            <p data-text='Digital Heritage – Immersive Cultural Heritage Innovator Contest 2024: "Best Use Of Technology Award".'></p>
+          </div>
+        </div>
+
+        <div class="slide-indicator">
+          <span class="dot active" role="button" aria-label="Slide 1"></span>
+          <span class="dot" role="button" aria-label="Slide 2"></span>
+          <span class="dot" role="button" aria-label="Slide 3"></span>
+          <span class="dot" role="button" aria-label="Slide 4"></span>
+          <span class="dot" role="button" aria-label="Slide 5"></span>
+        </div>
       </div>
-    </div>
-
-    <div class="slide" style="background-image: url('images/Saime1.png');">
-      <div class="slide-content">
-        <h1>SAIME</h1>
-        <p data-text='A VR Unity simulation in which MARL Agents are deployed to LLM-driven procedurally generated rooms.'></p>
-      </div>
-    </div>
-
-    <div class="slide" style="background-image: url('images/InfluxBanner2.png');">
-      <div class="slide-content">
-        <h1>Influx</h1>
-        <p data-text='Influx is a top-down, orthographic Unity simulation with procedurally generated rooms and emergent multi-agent behaviors.'></p>
-      </div>
-    </div>
-
-    <div class="slide" style="background-image: url('images/MountainTerrain.png');">
-      <div class="slide-content">
-        <h1>Project: World χάος</h1>
-        <p data-text='A hybrid terrain-generation system that combines noise-based algorithms.'></p>
-      </div>
-    </div>
-
-    <div class="slide" style="background-image: url('images/MPScene1.png');">
-      <div class="slide-content">
-        <h1>Midnight At The Pagoda</h1>
-        <p data-text='Digital Heritage – Immersive Cultural Heritage Innovator Contest 2024: "Best Use Of Technology Award".'></p>
-      </div>
-    </div>
-
-    <div class="slide-indicator">
-      <span class="dot active" role="button" aria-label="Slide 1"></span>
-      <span class="dot" role="button" aria-label="Slide 2"></span>
-      <span class="dot" role="button" aria-label="Slide 3"></span>
-      <span class="dot" role="button" aria-label="Slide 4"></span>
-      <span class="dot" role="button" aria-label="Slide 5"></span>
-    </div>
-  </div>
-</section>
-
+    </section>
 
     <!-- About Section -->
     <section id="about">
@@ -185,35 +185,39 @@
         <div class="about-item">
           <div class="about-text left">
             <h3>What is the 9TH BEDROOM?</h3>
-            <p>The 9TH BEDROOM is an independent game and XR studio, built on curiosity, experimentation, and a love for immersive worlds. It’s a space for bold ideas — where boundaries between games, art, and technology are blurred.
-
-We believe in thoughtful design, meaningful interaction, and the power of play to challenge, comfort, or transform. Every project is personal, crafted with intention and technical care.
-
-</p>
+            <p>
+              The 9TH BEDROOM is an independent game and XR studio, built on curiosity, experimentation, and a love for immersive worlds. It’s a space for bold ideas — where boundaries between games, art, and technology are blurred.
+              <br><br>
+              We believe in thoughtful design, meaningful interaction, and the power of play to challenge, comfort, or transform. Every project is personal, crafted with intention and technical care.
+            </p>
           </div>
           <div class="about-image right">
             <img src="images/MPScene7.png" alt="About Image 1" loading="lazy">
           </div>
         </div>
+
         <div class="about-item">
           <div class="about-image left">
             <img src="images/Saime1.png" alt="About Image 2" loading="lazy">
           </div>
           <div class="about-text right">
             <h3>What We Do</h3>
-            <p>We design and develop interactive experiences for PC, VR, AR, and Mixed Reality.
-
-From early prototypes to full builds, we work across Unity’s ecosystem to bring ideas to life — blending gameplay mechanics, spatial design, and emergent systems. Whether it’s an atmospheric game or an experimental XR concept, we build experiences that invite curiosity.</p>
+            <p>
+              We design and develop interactive experiences for PC, VR, AR, and Mixed Reality.
+              <br><br>
+              From early prototypes to full builds, we work across Unity’s ecosystem to bring ideas to life — blending gameplay mechanics, spatial design, and emergent systems. Whether it’s an atmospheric game or an experimental XR concept, we build experiences that invite curiosity.
+            </p>
           </div>
         </div>
+
         <div class="about-item">
           <div class="about-text left">
             <h3>Why Work With Me?</h3>
-            <p>As a solo developer, I offer a hands-on, detail-driven approach. You’re not dealing with layers of abstraction — just direct, focused collaboration.
-
-With deep experience in Unity and immersive tech, I move quickly, adapt easily, and treat every project like it matters — because it does.
-
-</p>
+            <p>
+              As a solo developer, I offer a hands-on, detail-driven approach. You’re not dealing with layers of abstraction — just direct, focused collaboration.
+              <br><br>
+              With deep experience in Unity and immersive tech, I move quickly, adapt easily, and treat every project like it matters — because it does.
+            </p>
           </div>
           <div class="about-image right">
             <img src="images/Me1.png" alt="About Image 3" loading="lazy">
@@ -234,6 +238,7 @@ With deep experience in Unity and immersive tech, I move quickly, adapt easily, 
             <a href="BeatboxVRProjectPost.html" class="btn">View Project</a>
           </div>
         </div>
+
         <div class="project-card">
           <div class="project">
             <img src="images/TitleBanner.png" alt="AR wand selection" loading="lazy">
@@ -242,6 +247,7 @@ With deep experience in Unity and immersive tech, I move quickly, adapt easily, 
             <a href="AetherTagProjectPost.html" class="btn">View Project</a>
           </div>
         </div>
+
         <div class="project-card">
           <div class="project">
             <img src="images/BannerMath2.png" alt="Limited Space gameplay" loading="lazy">
@@ -251,98 +257,106 @@ With deep experience in Unity and immersive tech, I move quickly, adapt easily, 
           </div>
         </div>
       </div>
+
       <div class="center-btn">
         <a href="projects.html" class="btn view-all-btn">View All Projects</a>
       </div>
     </section>
 
-<!-- Gallery Section -->
-<section id="gallery" class="fade-in-slide">
-  <h2 class="section-header">Portfolio</h2>
-  <div class="swiper-container">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide">
-        <a href="images/InfluxAlarmRepair.png" data-lightbox="gallery" data-title="RPG Screenshot|First-person RPG scene">
-          <div class="img-container custom-lightbox">
-            <img src="images/InfluxAlarmRepair.png" alt="RPG screenshot" loading="lazy">
+    <!-- Gallery Section -->
+    <section id="gallery" class="fade-in-slide">
+      <h2 class="section-header">Portfolio</h2>
+
+      <!-- Add "swiper" class for compatibility and easier Swiper init if needed -->
+      <div class="swiper swiper-container">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <a href="images/InfluxAlarmRepair.png" data-lightbox="gallery" data-title="RPG Screenshot|First-person RPG scene">
+              <div class="img-container custom-lightbox">
+                <img src="images/InfluxAlarmRepair.png" alt="RPG screenshot" loading="lazy">
+              </div>
+            </a>
           </div>
-        </a>
+
+          <div class="swiper-slide">
+            <a href="images/VRShooter3.jpg" data-lightbox="gallery" data-title="VR Shooter|Action VR shooter">
+              <div class="img-container custom-lightbox">
+                <img src="images/VRShooter3.jpg" alt="VR shooter screenshot" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/LimitedSpaceLevel1.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/LimitedSpaceLevel1.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/MPLD7.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/MPLD7.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/blend1.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/blend1.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/GreyScoutDemake9.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/GreyScoutDemake9.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/ForrestTerrain.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/ForrestTerrain.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+
+          <div class="swiper-slide">
+            <a href="images/BeatboxVRClasses.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
+              <div class="img-container custom-lightbox">
+                <img src="images/BeatboxVRClasses.png" alt="Eyeora concept" loading="lazy">
+              </div>
+            </a>
+          </div>
+        </div>
+
+			<button class="swiper-button-prev slider-btn" aria-label="Previous gallery slide" type="button">
+			  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+				<path d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
+			  </svg>
+			</button>
+
+			<button class="swiper-button-next slider-btn" aria-label="Next gallery slide" type="button">
+			  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+				<path d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
+			  </svg>
+			</button>
+
+		</div>
+
+      <div class="center-btn">
+        <a href="gallery.html" class="btn view-all-btn">View Gallery</a>
       </div>
-      <div class="swiper-slide">
-        <a href="images/VRShooter3.jpg" data-lightbox="gallery" data-title="VR Shooter|Action VR shooter">
-          <div class="img-container custom-lightbox">
-            <img src="images/VRShooter3.jpg" alt="VR shooter screenshot" loading="lazy">
-          </div>
-        </a>
-      </div>
-      <div class="swiper-slide">
-        <a href="images/LimitedSpaceLevel1.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/LimitedSpaceLevel1.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>      
-      <div class="swiper-slide">
-        <a href="images/MPLD7.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/MPLD7.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>      
-      <div class="swiper-slide">
-        <a href="images/blend1.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/blend1.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>      
-      <div class="swiper-slide">
-        <a href="images/GreyScoutDemake9.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/GreyScoutDemake9.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>      
-      <div class="swiper-slide">
-        <a href="images/ForrestTerrain.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/ForrestTerrain.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>      
-      <div class="swiper-slide">
-        <a href="images/BeatboxVRClasses.png" data-lightbox="gallery" data-title="Eyeora Concept|Concept art for Eyeora VR">
-          <div class="img-container custom-lightbox">
-            <img src="images/BeatboxVRClasses.png" alt="Eyeora concept" loading="lazy">
-          </div>
-        </a>
-      </div>
-      <!-- ...more slides -->
-    </div>
-
-    <!-- identical prev/next buttons as on the home slider -->
-    <button class="slider-btn prev-btn swiper-button-prev" aria-label="Previous gallery slide">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
-      </svg>
-    </button>
-    <button class="slider-btn next-btn swiper-button-next" aria-label="Next gallery slide">
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
-      </svg>
-    </button>
-  </div>
-
-  <div class="center-btn">
-    <a href="gallery.html" class="btn view-all-btn">View Gallery</a>
-  </div>
-</section>
-
-
+    </section>
 
     <!-- Consolidated Lightbox -->
     <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog">
-      <button class="close" aria-label="Close lightbox">&times;</button>
+      <button class="close" aria-label="Close lightbox" type="button">&times;</button>
       <div class="lightbox-content">
         <img src="" alt="" loading="lazy">
         <div class="lightbox-caption-container">
@@ -386,93 +400,47 @@ With deep experience in Unity and immersive tech, I move quickly, adapt easily, 
       </div>
     </section>
 
-    <!--
-    <!-- Contact Section
-    <section id="contact" class="fade-in-slide">
-      <div class="container">
-        <div class="contact-content">
-          <h2>Contact Me</h2>
-          <form class="contact-form" action="sendmail.php" method="post">
-            <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" name="name" placeholder="Your Name" required>
-            </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="Your Email" required>
-            </div>
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
-            </div>
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
-        </div>
-      </div>
-    </section>
   </main>
-  -->
 
-<footer>
-  <div class="container">
-    <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
-    <ul class="social-media-links">
-      <li>
-        <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin">
-          <i class="fab fa-linkedin"></i>
-        </a>
-      </li>
-      <li>
-        <a href="https://github.com/MilesJMaiden" target="_blank" class="github">
-          <i class="fab fa-github"></i>
-        </a>
-      </li>
-      <li>
-        <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter">
-          <i class="fab fa-twitter"></i>
-        </a>
-      </li>
-      <li>
-        <a href="#" target="_blank" class="instagram">
-          <i class="fab fa-instagram"></i>
-        </a>
-      </li>
-      <li>
-        <a href="#" target="_blank" class="facebook">
-          <i class="fab fa-facebook"></i>
-        </a>
-      </li>
-    </ul>
-  </div>
-</footer>
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
 
-
-  <!-- Deferred scripts with crossorigin -->
-  <script
-    defer
-    src="https://code.jquery.com/jquery-3.6.0.min.js"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    defer
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    defer
-    src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    defer
-    src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    defer
-    src="https://unpkg.com/swiper@7/swiper-bundle.min.js"
-    crossorigin="anonymous"
-  ></script>
+  <!-- Deferred scripts -->
+  <script defer src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://unpkg.com/swiper@7/swiper-bundle.min.js" crossorigin="anonymous"></script>
   <script defer src="js/javascript.js"></script>
 </body>
 </html>

@@ -2,168 +2,168 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>XR Asset-Loading Pipelines | 9th Bedroom Blog</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- jQuery (for any smooth-scroll or small UI bits) -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <title>9TH BEDROOM — Blog</title>
+  <meta name="description" content="9TH BEDROOM — Blog" />
 
-  <!-- GSAP, Typed.js, ScrollReveal, Swiper etc. -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
-  <script defer src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
-  <script defer src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
+  <!-- small critical CSS for skip link only (matches your index/projects approach) -->
+  <style>
+    .skip-link{
+      position:absolute;left:-999px;top:auto;width:1px;height:1px;overflow:hidden;
+      background:#000;color:#fff;padding:8px;z-index:1000;
+    }
+    .skip-link:focus{position:static;width:auto;height:auto;}
+  </style>
 
-  <!-- your blog-specific JS (if any) -->
-  <script defer src="js/blog.js"></script>
+  <!-- preload main stylesheet (same performance pattern as projects) -->
+  <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  />
+
+  <!-- Font Awesome (only if you use <i> icons; safe to keep) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  />
 </head>
+
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
   <header>
-    <nav class="navbar">
-      <a href="index.html" class="brand-logo">THE 9TH BEDROOM</a>
+    <nav class="navbar" role="navigation">
+      <!-- logo + text (MATCHES INDEX/PROJECTS) -->
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <!-- Primary nav -->
       <div class="navbar-links">
         <a href="index.html">Home</a>
         <a href="index.html#about">About</a>
         <a href="projects.html">Projects</a>
         <a href="blog.html" class="active">Blog</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="cv.html">CV</a>
+        <a href="gallery.html">Portfolio</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <!-- Hamburger toggle -->
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2" width="24" height="2" rx="1"></rect>
+          <rect y="11" width="24" height="2" rx="1"></rect>
+          <rect y="20" width="24" height="2" rx="1"></rect>
+        </svg>
+      </button>
+
+      <!-- Slide-in mobile menu -->
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="index.html#home">Home</a>
+        <a role="menuitem" href="index.html#about">About</a>
+        <a role="menuitem" href="projects.html">Projects</a>
+        <a role="menuitem" href="blog.html">Blog</a>
+        <a role="menuitem" href="gallery.html">Portfolio</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
       </div>
     </nav>
-    <div class="hamburger">
-      <svg viewBox="0 0 24 24" width="24" height="24">
-        <g fill="white">
-          <rect y="2" width="24" height="2" rx="1"/>
-          <rect y="11" width="24" height="2" rx="1"/>
-          <rect y="20" width="24" height="2" rx="1"/>
-        </g>
-      </svg>
-    </div>
-    <div class="navbar-menu">
-      <a href="index.html">Home</a>
-      <a href="index.html#about">About</a>
-      <a href="projects.html">Projects</a>
-      <a href="blog.html" class="active">Blog</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="cv.html">CV</a>
-      <button class="close-menu-btn">&times;</button>
-    </div>
   </header>
 
-  <main>
-    <section id="blog">
+  <main id="main">
+    <!-- Blog -->
+    <section id="blog" class="fade-in-slide">
+      <h2 class="section-header">Blog</h2>
+
       <div class="container">
-        <!-- Page Title -->
-        <h2>XR Asset-Loading Pipelines</h2>
-        <h2>Industry Placement Report at Soluis</h2>
-
-        <!-- Introduction -->
-        <div class="project-card left" data-sr>
-          <div class="project-image" data-sr="enter right move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Introduction" alt="Introduction"/>
+        <!-- Blog summary 1 -->
+        <div class="project-card left">
+          <div class="project-image">
+            <img src="images/placeholder-blog-1.jpg" alt="Blog post placeholder image 1" loading="lazy" />
           </div>
-          <div class="project-info" data-sr="enter left move 50px">
-            <h3>Introduction</h3>
+          <div class="project-info">
+            <h3>Placeholder Blog Post #1</h3>
             <p>
-              On my three-month placement at Soluis (formerly Edify), I architected and implemented a
-              modular XR asset-loading pipeline in Unity. By combining AES encryption, in-memory HTTP
-              serving, and reference-counted caching, I halved asset-load times and slashed memory overhead.
+              A short teaser for your first blog entry. Use this space to summarise the topic, the main takeaway,
+              and why someone should click through to read the full post.
             </p>
+            <a href="blog-post-1.html" class="btn">Read More</a>
           </div>
         </div>
 
-        <!-- Company Background -->
-        <div class="project-card right" data-sr>
-          <div class="project-image" data-sr="enter left move 50px">
-            <img src="images/SoluisLogo.png" alt="Company Background"/>
+        <!-- Blog summary 2 -->
+        <div class="project-card right">
+          <div class="project-image">
+            <img src="images/placeholder-blog-2.jpg" alt="Blog post placeholder image 2" loading="lazy" />
           </div>
-          <div class="project-info" data-sr="enter right move 50px">
-            <h3>Company Background</h3>
+          <div class="project-info">
+            <h3>Placeholder Blog Post #2</h3>
             <p>
-              Soluis Group is a Glasgow-based XR studio, partnering with Historic Environment Scotland
-              and National Museums Scotland on the £5.6M “Museums in the Metaverse” programme. They
-              deliver cutting-edge CGI, VR, and AR experiences for enterprise, heritage, and training.
+              Another summary block matching the Projects layout. Keep this ~2–4 sentences. If you want, add the
+              date, tags, or reading time later.
             </p>
+            <a href="blog-post-2.html" class="btn">Read More</a>
           </div>
         </div>
 
-        <!-- Role & Workflow -->
-        <div class="project-card left" data-sr>
-          <div class="project-image" data-sr="enter right move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Role+%26+Workflow" alt="My Role & Workflow"/>
+        <!-- Blog summary 3 -->
+        <div class="project-card left">
+          <div class="project-image">
+            <img src="images/placeholder-blog-3.jpg" alt="Blog post placeholder image 3" loading="lazy" />
           </div>
-          <div class="project-info" data-sr="enter left move 50px">
-            <h3>My Role &amp; Workflow</h3>
+          <div class="project-info">
+            <h3>Placeholder Blog Post #3</h3>
             <p>
-              I led the file-loading feature end-to-end: sprint planning in Jira, PRs in Bitbucket,
-              TDD with Unity Test Runner, and CI integration. Regular code reviews and stakeholder
-              demos ensured alignment and high quality.
+              Third placeholder entry. Once you have real posts, swap the image + title + snippet + link target.
+              The card styling will remain identical to your Projects page.
             </p>
+            <a href="blog-post-3.html" class="btn">Read More</a>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Key Systems Delivered -->
-        <div class="project-card right" data-sr>
-          <div class="project-image" data-sr="enter left move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Key+Systems" alt="Key Systems Delivered"/>
-          </div>
-          <div class="project-info" data-sr="enter right move 50px">
-            <h3>Key Systems Delivered</h3>
-            <ul>
-              <li><strong>Dynamic Radial Menus:</strong> Procedural Unity component batching segment meshes.</li>
-              <li><strong>Modular File Loader:</strong> IFileLoaderManager + Assimp/GLTFast + cache + HTTP server.</li>
-              <li><strong>TDD & SOLID Refactor:</strong> 90%+ coverage, NUnit & Unity Test Runner, CI performance benchmarks.</li>
-            </ul>
-          </div>
-        </div>
+    <!-- Contact (optional; kept for consistency) -->
+    <section id="contact" class="fade-in-slide">
+      <h2 class="section-header">Contact</h2>
 
-        <!-- Challenges & Solutions -->
-        <div class="project-card left" data-sr>
-          <div class="project-image" data-sr="enter right move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Challenges+%26+Solutions" alt="Challenges & Solutions"/>
-          </div>
-          <div class="project-info" data-sr="enter left move 50px">
-            <h3>Challenges &amp; Solutions</h3>
-            <p>
-              Handling AES-encrypted multiplexed streams in real time without blocking the main thread
-              led to a layered FileDecoder: clear-text JSON headers first, then on-demand
-              CryptoStream wrapping for sub-streams.
-            </p>
-          </div>
-        </div>
+      <div class="container">
+        <div class="contact-content">
+          <h2>Contact Me</h2>
+          <form class="contact-form" action="sendmail.php" method="post" id="contact-form">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Your Name" required />
+            </div>
 
-        <!-- Reflection -->
-        <div class="project-card right" data-sr>
-          <div class="project-image" data-sr="enter left move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Reflection" alt="Reflection"/>
-          </div>
-          <div class="project-info" data-sr="enter right move 50px">
-            <h3>Reflection</h3>
-            <p>
-              This placement sharpened my XR architecture skills: event-driven design, performance
-              optimization, and the power of rigorous TDD with automated benchmarks to keep
-              complex systems stable.
-            </p>
-          </div>
-        </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="Your Email" required />
+            </div>
 
-        <!-- Future Directions -->
-        <div class="project-card left" data-sr>
-          <div class="project-image" data-sr="enter right move 50px">
-            <img src="https://via.placeholder.com/600x400?text=Future+Directions" alt="Future Directions"/>
-          </div>
-          <div class="project-info" data-sr="enter left move 50px">
-            <h3>Future Directions</h3>
-            <ul>
-              <li>CI-driven performance regression tests on representative asset sets.</li>
-              <li>Hot-swappable loader plugins via Unity AssetBundles.</li>
-              <li>Expand to AR formats (USDZ, PLY) for mobile mixed reality.</li>
-            </ul>
-          </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Send Message</button>
+          </form>
         </div>
       </div>
     </section>
@@ -172,14 +172,41 @@
   <footer>
     <div class="container">
       <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+
       <ul class="social-media-links">
-        <li><a href="https://linkedin.com/in/joshuajdavies" target="_blank"><i class="fab fa-linkedin"></i></a></li>
-        <li><a href="https://github.com/MilesJMaiden" target="_blank"><i class="fab fa-github"></i></a></li>
-        <li><a href="https://twitter.com/MilesJMaiden" target="_blank"><i class="fab fa-twitter"></i></a></li>
-        <li><a href="#" target="_blank"><i class="fab fa-instagram"></i></a></li>
-        <li><a href="#" target="_blank"><i class="fab fa-facebook"></i></a></li>
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" rel="noopener" class="linkedin">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" rel="noopener" class="github">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" rel="noopener" class="twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" rel="noopener" class="instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" rel="noopener" class="facebook">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
       </ul>
     </div>
   </footer>
+
+  <!-- Scripts (de-duped, deferred) -->
+  <script defer src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+
+  <!-- Page script -->
+  <script defer src="js/blog.js"></script>
 </body>
 </html>
