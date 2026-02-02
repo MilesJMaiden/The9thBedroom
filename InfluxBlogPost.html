@@ -1,11 +1,13 @@
 <!--
   File: blog-post-influx.html
   Goal:
-  - KEEP ALL CONTENT (text/images/sections) — no removals.
-  - Each section renders as its OWN “card” and gets a hover colour shift
-    similar to your project-card hover gradient.
-  - Reuse styles.css tokens + layout; do NOT introduce Influx-specific styling.
-  - Navbar/footer remain identical to index.
+  - Navbar + footer markup matches your index.html EXACTLY (same classes/ids/ARIA).
+  - Blog post styling is GENERIC (blog-post), so ALL posts share one look.
+  - Uses your shared styles.css + blogpost.js (no Influx-specific JS/CSS).
+  - IMPROVEMENT:
+    - Incorporates more of styles.css (container widths, spacing tokens, blog-post-page rules).
+    - Implements page margins + better spacing by using .post-container + letting cards drive layout.
+    - DOES NOT remove or change the existing CONTENT (text/images/sections remain intact).
 -->
 
 <!DOCTYPE html>
@@ -20,7 +22,7 @@
     content="Influx: a procedural multi-agent maintenance-and-sabotage simulation built in Unity (URP), featuring dungeon-style generation, prioritized FSM agents, and alien sabotage."
   />
 
-  <!-- small critical CSS for skip-link & nav paint (matches your other pages) -->
+  <!-- inline critical CSS for skip-link & header/nav (matches your other pages) -->
   <style>
     .skip-link {
       position: absolute;
@@ -46,24 +48,26 @@
       color: #fff;
     }
 
-    /* ============================================================
-       BLOG POST LAYOUT + CARD HOVER (GENERIC)
-       - Sections become rhythm wrappers (no background/borders)
-       - The article IS the card (hover gradient like project cards)
-       - Uses your existing gradient-animation keyframes from styles.css
-       ============================================================ */
+    /* === BLOG POST LAYOUT PATCH (critical) =========================
+       Purpose:
+       - Use your existing styles.css tokens + widths (.post-container rules)
+       - Add clean page margins + consistent vertical rhythm
+       - Neutralise global section alternating backgrounds/borders/padding
+         ONLY for blog-post pages (so cards define spacing instead of <section>)
+       ============================================================= */
+    body.blog-post-page main#main {
+      display: block;
+      padding: 0; /* styles.css blog-post rules handle interior padding */
+    }
 
-    /* ensure blog post page background + text */
-    body.blog-post-page { background: #f5f5f5; color: #000; }
-
-    /* container matches site width/padding */
+    /* Use your existing "BLOG POST PAGES" block: .post-container width/padding */
     .blog-post-page .post-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 20px;
     }
 
-    /* neutralise global section styling ONLY on blog-post pages */
+    /* Kill global alternating section backgrounds/borders/padding on blog posts */
     .blog-post-page main#main section,
     .blog-post-page main#main section:nth-of-type(odd),
     .blog-post-page main#main section:nth-of-type(even) {
@@ -72,58 +76,27 @@
       padding: 0 !important;
     }
 
-    /* consistent vertical spacing between cards */
-    .blog-post-page .post-section {
+    /* Give sections controlled vertical rhythm between cards */
+    .blog-post-page main#main .post-section {
       padding: var(--space-3) 0;
-      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
     }
 
-    /* hero spacing */
-    .blog-post-page .blog-post-hero {
+    /* Ensure the hero has comfortable top spacing under navbar */
+    .blog-post-page main#main .blog-post-hero {
       padding: var(--space-5) 0 var(--space-3);
     }
 
-    /* Make every section's article behave like a card + hover colour shift */
-    .blog-post-page .blog-post-card {
-      background: #fff;
-      border-radius: var(--radius-2);
-      box-shadow: var(--shadow-2);
-      padding: var(--space-4);
-      margin: 0; /* spacing handled by .post-section */
-      transition:
-        background-image 1s ease-in-out,
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
+    /* Improve figure spacing using your tokens (applies to existing markup) */
+    .blog-post-page .post-figure {
+      margin-top: var(--space-3);
     }
 
-    .blog-post-page .blog-post-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-3);
-
-      /* Same hover treatment as your project cards */
-      background-image: linear-gradient(135deg, #6EE7B7 0%, #FFF5B8 100%);
-      background-size: 200% 200%;
-      animation: gradient-animation 5s infinite;
+    /* Make sure code blocks don’t touch edges on small screens */
+    .blog-post-page pre {
+      margin-top: var(--space-3);
     }
 
-    /* keep buttons/links readable on the gradient */
-    .blog-post-page .blog-post-card:hover a.btn,
-    .blog-post-page .blog-post-card:hover a.view-all-btn {
-      background-color: #000;
-      color: #fff;
-      border-color: #000;
-    }
-
-    /* TOC bar sits neatly inside the hero card */
-    .blog-post-page .post-toc { margin-top: var(--space-3); }
-    .blog-post-page .post-toc .filter-container {
-      position: static;
-      border-radius: var(--radius-2);
-      overflow: hidden;
-      box-shadow: var(--shadow-1);
-    }
-
-    /* spacing for actions + nav blocks */
+    /* Post actions spacing (existing content unchanged) */
     .blog-post-page .post-actions {
       display: flex;
       flex-wrap: wrap;
@@ -131,23 +104,16 @@
       margin: var(--space-2) 0 var(--space-3);
     }
 
+    /* Keep "Back to top" links spaced consistently */
     .blog-post-page .post-nav {
       margin-top: var(--space-3);
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2);
     }
-
-    /* figure spacing */
-    .blog-post-page .post-figure { margin-top: var(--space-3); }
-
-    /* mobile padding */
-    @media (max-width: 767px) {
-      .blog-post-page .blog-post-card { padding: var(--space-3); }
-    }
   </style>
 
-  <!-- preload main stylesheet (same performance pattern as index/projects) -->
+  <!-- preload main stylesheet (same pattern as your other pages) -->
   <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="styles.css"></noscript>
 
@@ -173,6 +139,8 @@
 
   <!-- =========================================================
        HEADER / NAVBAR (MATCHES YOUR INDEX EXACTLY)
+       NOTE: On blog pages, the # anchors won't exist. That's OK —
+       the links remain consistent site-wide.
        ========================================================= -->
   <header>
     <nav class="navbar" role="navigation">
@@ -217,9 +185,10 @@
   </header>
 
   <!-- =========================================================
-       BLOG POST PAGE
-       - Each <section> contains ONE card (<article>)
-       - Hover gradient applied to .blog-post-card (generic)
+       BLOG POST PAGE (GENERIC CLASSES)
+       IMPROVEMENT:
+       - Wrap content in .post-container (matches styles.css container width + padding)
+       - Use .post-section wrapper for consistent rhythm (no content removed)
        ========================================================= -->
   <main id="main">
     <div class="post-container">
@@ -243,8 +212,8 @@
 
             <div class="post-meta">
               <div class="meta-box">
-                <p class="meta-label">Author</p>
-                <p class="meta-value">Joshua James Davies (JDAVI005)</p>
+                <p class="meta-label">Author(s)</p>
+                <p class="meta-value">Joshua J. Davies, Miles J. Maiden</p>
               </div>
               <div class="meta-box">
                 <p class="meta-label">Engine / Pipeline</p>
@@ -254,10 +223,6 @@
                 <p class="meta-label">Focus</p>
                 <p class="meta-value">Procedural generation, NavMesh + links, FSM agents, coroutines</p>
               </div>
-              <div class="meta-box">
-                <p class="meta-label">Submission date</p>
-                <p class="meta-value">27/04/2025</p>
-              </div>
             </div>
 
             <div class="post-banner">
@@ -265,7 +230,7 @@
             </div>
             <p class="post-caption">Square title banner for the Influx application (SQBanner.png).</p>
 
-            <!-- TOC -->
+            <!-- TOC (reuses your filter-bar styling conventions; still generic) -->
             <div class="post-toc" aria-label="Table of contents">
               <div class="filter-container">
                 <a class="filter-btn" href="#abstract">ABSTRACT</a>

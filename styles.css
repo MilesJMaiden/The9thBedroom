@@ -1492,3 +1492,255 @@ body.lightbox-open { overflow: hidden; }
 .navbar .brand-logo:hover .logo-icon {
   animation: glowing-filter 5s infinite;
 }
+
+/* ============================================================
+   BLOG POST PAGES — generic, consistent, reuses existing tokens
+   Add to bottom of styles.css
+   ============================================================ */
+
+/* Apply only on pages where you set: <body class="blog-post-page"> */
+.blog-post-page {
+  background: #f5f5f5;
+  color: var(--alt-text-color);
+}
+
+/* Give breathing room between navbar and first card + before footer
+   - Top uses navbar height to guarantee visible gap regardless of header style
+   - Bottom ensures space between last card and footer */
+.blog-post-page main#main {
+  padding-top: calc(var(--nav-h) + var(--space-4));
+  padding-bottom: var(--space-5);
+}
+
+/* Your wrappers: keep consistent with .container */
+.blog-post-page .post-container,
+.blog-post-page .blog-post-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* BLOG POSTS: neutralise global section styling (alternating backgrounds/borders) */
+.blog-post-page section,
+.blog-post-page section:nth-of-type(odd),
+.blog-post-page section:nth-of-type(even) {
+  background: transparent !important;
+  border: none !important;
+
+  /* IMPORTANT: don't override main padding; spacing comes from section margins */
+  padding: 0 !important;
+
+  scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+}
+
+/* Space BETWEEN the section-cards */
+.blog-post-page section {
+  margin: 0 0 var(--space-4);
+}
+.blog-post-page section:last-of-type {
+  margin-bottom: 0; /* so main#main padding-bottom defines footer gap */
+}
+
+/* Reusable content card (supports BOTH your classes) */
+.blog-post-page .post-card,
+.blog-post-page .blog-post-card {
+  background: #fff;
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-2);
+
+  padding: var(--space-4);
+  margin: 0;
+
+  /* match your projects/blog list hover behaviour (lift + shadow) */
+  transition:
+    background-image 1s ease-in-out,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Hover: same gradient animation style as your project cards */
+.blog-post-page .post-card:hover,
+.blog-post-page .blog-post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+
+  background-image: linear-gradient(135deg, #6EE7B7 0%, #FFF5B8 100%);
+  background-size: 200% 200%;
+  animation: gradient-animation 5s infinite;
+}
+
+/* Safety: if user is tabbing, keep focus visible */
+.blog-post-page .post-card:focus-within,
+.blog-post-page .blog-post-card:focus-within {
+  outline: 3px solid #000;
+  outline-offset: 4px;
+}
+
+/* Post title + meta */
+.blog-post-page .post-title {
+  font-size: var(--fs-3);
+  line-height: 1.1;
+  margin: 0 0 var(--space-2);
+  color: #000;
+}
+
+.blog-post-page .post-subtitle {
+  font-size: var(--fs-1);
+  margin: 0 0 var(--space-3);
+  color: rgba(0,0,0,0.75);
+}
+
+.blog-post-page .post-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Support BOTH markup styles */
+.blog-post-page .post-meta-item,
+.blog-post-page .meta-box {
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: var(--radius-2);
+  padding: 0.9rem 1rem;
+}
+
+.blog-post-page .post-meta-item .label,
+.blog-post-page .meta-box .meta-label {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.25rem;
+  color: #000;
+}
+
+.blog-post-page .post-meta-item .value,
+.blog-post-page .meta-box .meta-value {
+  margin: 0;
+  color: rgba(0,0,0,0.75);
+}
+
+/* In-post headings */
+.blog-post-page .post-card h2,
+.blog-post-page .blog-post-card h2 {
+  font-size: var(--fs-2);
+  margin: 0 0 var(--space-2);
+  color: #000;
+}
+
+.blog-post-page .post-card h3,
+.blog-post-page .blog-post-card h3 {
+  margin: var(--space-3) 0 var(--space-1);
+  color: #000;
+}
+
+/* Figures / images — support BOTH:
+   - semantic: figure/figcaption
+   - existing: .post-figure + .cap
+*/
+.blog-post-page figure,
+.blog-post-page .post-figure,
+.blog-post-page .post-banner {
+  margin: var(--space-3) 0 0;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+}
+
+/* Give consistent spacing BETWEEN multiple images within a card */
+.blog-post-page .post-banner + .post-caption,
+.blog-post-page .post-figure + .post-figure,
+.blog-post-page figure + figure {
+  margin-top: var(--img-gap);
+}
+
+/* Extra breathing room around images inside cards */
+.blog-post-page .post-banner img,
+.blog-post-page figure img,
+.blog-post-page .post-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Captions */
+.blog-post-page figcaption,
+.blog-post-page .post-figure .cap,
+.blog-post-page .post-caption {
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  color: rgba(0,0,0,0.70);
+  border-top: 1px solid rgba(0,0,0,0.10);
+}
+
+/* Code blocks */
+.blog-post-page pre {
+  margin: var(--space-3) 0 0;
+  padding: 1rem;
+  border-radius: var(--radius-2);
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.06);
+  overflow: auto;
+}
+
+/* TOC bar (reuses filter styles) */
+.blog-post-page .post-toc {
+  margin-top: var(--space-3);
+}
+
+.blog-post-page .post-toc .filter-container {
+  position: static;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+/* Optional: kicker */
+.blog-post-page .post-kicker {
+  margin: 0 0 var(--space-2);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.6);
+}
+
+/* Action row */
+.blog-post-page .post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+/* Nav row */
+.blog-post-page .post-nav {
+  margin-top: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .blog-post-page main#main {
+    padding-top: calc(var(--nav-h) + var(--space-3));
+    padding-bottom: var(--space-4);
+  }
+
+  .blog-post-page section {
+    margin-bottom: var(--space-3);
+  }
+
+  .blog-post-page .post-card,
+  .blog-post-page .blog-post-card {
+    padding: var(--space-3);
+  }
+
+  /* Slightly tighter image spacing on small screens */
+  .blog-post-page .post-figure + .post-figure,
+  .blog-post-page figure + figure {
+    margin-top: 10px;
+  }
+}

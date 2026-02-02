@@ -1,18 +1,184 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
-  //
-  // ── LIGHTBOX RELATED CODE ────────────────────────────────────────────────
-  //
-  const lightbox        = document.getElementById("lightbox");
-  const lightboxImage   = document.querySelector("#lightbox img");
-  const lightboxHeader  = document.querySelector(".lightbox-header");
+﻿// Mark JS as enabled so CSS can safely run the reveal animations (html.js ...)
+document.documentElement.classList.add("js");
+
+document.addEventListener("DOMContentLoaded", function () {
+  /* ======================================================================
+     Utilities
+  ====================================================================== */
+  const $ = window.jQuery;
+
+  const getNavbarOffset = () => {
+    const navbar = document.querySelector(".navbar");
+    return navbar ? navbar.offsetHeight : 0;
+  };
+
+  // Smooth scroll helper (uses jQuery animate if available; falls back to native)
+  const smoothScrollToY = (targetY, duration = 1000) => {
+    const y = Math.max(0, Math.round(targetY));
+
+    if ($) {
+      $("html, body").stop(true).animate({ scrollTop: y }, duration);
+      return;
+    }
+
+    // Native smooth scroll (no duration control, but clean + reliable)
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
+  const closeMobileMenuIfOpen = () => {
+    const navbarMenu = document.querySelector("#navbar-menu") || document.querySelector(".navbar-menu");
+    const hamburger = document.querySelector(".hamburger");
+    if (!navbarMenu || !hamburger) return;
+
+    const isOpen = navbarMenu.classList.contains("active");
+    if (!isOpen) return;
+
+    navbarMenu.classList.remove("active");
+    navbarMenu.setAttribute("aria-hidden", "true");
+    hamburger.setAttribute("aria-expanded", "false");
+    hamburger.style.display = "flex";
+  };
+
+  /* ======================================================================
+     1) Smooth scrolling (same-page anchors only) + navbar offset
+  ====================================================================== */
+  document.addEventListener("click", function (e) {
+    const link = e.target.closest('a[href^="#"]:not([href="#"])');
+    if (!link) return;
+
+    const targetId = link.getAttribute("href");
+    const target = document.querySelector(targetId);
+    if (!target) return;
+
+    e.preventDefault();
+
+    const navOffset = getNavbarOffset();
+    const targetTop = target.getBoundingClientRect().top + window.pageYOffset - navOffset;
+
+    smoothScrollToY(targetTop, 1000);
+    closeMobileMenuIfOpen();
+  });
+
+  /* ======================================================================
+     2) Contact form submission (safe)
+  ====================================================================== */
+  const contactForm = document.querySelector("#contact-form");
+  if (contactForm) {
+    contactForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert("Form submitted!");
+    });
+  }
+
+  /* ======================================================================
+     3) Navbar "active flash" effect (desktop + mobile)
+        - doesn’t permanently break active page highlighting
+  ====================================================================== */
+  document.addEventListener("click", function (e) {
+    const navLink = e.target.closest(".navbar-links a, .navbar-menu a");
+    if (!navLink) return;
+
+    navLink.classList.add("active");
+    setTimeout(() => navLink.classList.remove("active"), 500);
+  });
+
+  /* ======================================================================
+     4) Mobile nav (ARIA-safe)
+  ====================================================================== */
+  const navbar = document.querySelector(".navbar");
+  const navbarMenu = document.querySelector("#navbar-menu") || document.querySelector(".navbar-menu");
+  const hamburger = document.querySelector(".hamburger");
+  const closeMenuBtn = document.querySelector(".close-menu-btn");
+  const menuItems = navbarMenu ? navbarMenu.querySelectorAll("a") : [];
+
+  const setMenuOpen = (open) => {
+    if (!navbarMenu || !hamburger) return;
+
+    navbarMenu.classList.toggle("active", open);
+    navbarMenu.setAttribute("aria-hidden", String(!open));
+    hamburger.setAttribute("aria-expanded", String(open));
+
+    // Your existing behaviour: hide hamburger when menu opens
+    hamburger.style.display = open ? "none" : "flex";
+  };
+
+  if (hamburger) hamburger.addEventListener("click", () => setMenuOpen(true));
+  if (closeMenuBtn) closeMenuBtn.addEventListener("click", () => setMenuOpen(false));
+  menuItems.forEach((item) => item.addEventListener("click", () => setMenuOpen(false)));
+
+  // Optional: hide hamburger when at very top of page (only if elements exist)
+  const handleScroll = () => {
+    if (!navbar || !hamburger || !navbarMenu) return;
+
+    const currentScroll = window.pageYOffset;
+    const navbarHeight = navbar.offsetHeight;
+
+    if (currentScroll < navbarHeight) {
+      hamburger.style.opacity = "0";
+      setTimeout(() => {
+        if (!navbarMenu.classList.contains("active")) hamburger.style.display = "none";
+      }, 10);
+    } else {
+      if (!navbarMenu.classList.contains("active")) {
+        hamburger.style.display = "flex";
+        setTimeout(() => (hamburger.style.opacity = "1"), 10);
+      }
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  window.addEventListener("resize", handleScroll);
+  handleScroll();
+
+  /* ======================================================================
+     5) Reveal system (IntersectionObserver; matches your CSS html.js rules)
+  ====================================================================== */
+  const revealTargets = Array.from(document.querySelectorAll(".fade-in-slide, [data-sr]"));
+
+  if (revealTargets.length && "IntersectionObserver" in window) {
+    const reveal = (el) => el.classList.add("is-visible");
+
+    // reveal anything already in view (still transitions because CSS is applied)
+    revealTargets.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      if (r.top < vh && r.bottom > 0) reveal(el);
+    });
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+
+    revealTargets.forEach((el) => {
+      if (!el.classList.contains("is-visible")) observer.observe(el);
+    });
+  } else {
+    // fallback: show everything if observer not supported
+    revealTargets.forEach((el) => el.classList.add("is-visible"));
+  }
+
+  /* ======================================================================
+     6) Lightbox (your custom lightbox; safe-scoped)
+  ====================================================================== */
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImage = document.querySelector("#lightbox img");
+  const lightboxHeader = document.querySelector(".lightbox-header");
   const lightboxCaption = document.querySelector(".lightbox-caption");
-  const closeBtn        = document.querySelector(".close");
+  const closeBtn = document.querySelector(".close");
   const lightboxContent = document.querySelector(".lightbox-content");
 
   if (lightbox && lightboxImage && lightboxHeader && lightboxCaption) {
     lightbox.setAttribute("aria-hidden", "true");
 
-    function openLightbox(e) {
+    const openLightbox = (e) => {
       e.preventDefault();
 
       const container = e.target.closest(".img-container");
@@ -33,17 +199,17 @@
       lightbox.style.display = "block";
       lightbox.setAttribute("aria-hidden", "false");
       document.documentElement.style.overflow = "hidden";
-    }
+    };
 
     document.addEventListener("click", function (e) {
       if (e.target.closest(".custom-lightbox")) openLightbox(e);
     });
 
-    function closeLightboxFn() {
+    const closeLightboxFn = () => {
       lightbox.style.display = "none";
       lightbox.setAttribute("aria-hidden", "true");
       document.documentElement.style.overflow = "auto";
-    }
+    };
 
     lightbox.addEventListener("click", function (e) {
       e.preventDefault();
@@ -63,17 +229,15 @@
     lightboxCaption.addEventListener("click", (e) => e.stopPropagation());
   }
 
-  //
-  // ── SWIPER CAROUSEL (SCOPED TO #gallery) ─────────────────────────────────
-  //
+  /* ======================================================================
+     7) Swiper carousel (scoped to #gallery)
+  ====================================================================== */
   const gallerySwiperEl = document.querySelector("#gallery .swiper-container");
-
-  if (gallerySwiperEl && typeof Swiper !== "undefined") {
+  if (gallerySwiperEl && typeof window.Swiper !== "undefined") {
     const swiperInstance = new Swiper(gallerySwiperEl, {
       centeredSlides: false,
       spaceBetween: 10,
       navigation: {
-        // Scoped selectors ensure no collisions with homepage slider buttons
         nextEl: "#gallery .swiper-button-next",
         prevEl: "#gallery .swiper-button-prev",
       },
@@ -81,8 +245,8 @@
       initialSlide: 1,
       autoplay: { delay: 3000, disableOnInteraction: false },
       breakpoints: {
-        480:  { slidesPerView: 1 },
-        768:  { slidesPerView: 2 },
+        480: { slidesPerView: 1 },
+        768: { slidesPerView: 2 },
         1024: { slidesPerView: 3 },
         1025: { slidesPerView: 4 },
       },
@@ -92,14 +256,14 @@
     gallerySwiperEl.addEventListener("mouseleave", () => swiperInstance.autoplay.start());
   }
 
-  //
-  // ── HOMEPAGE SLIDER (SCOPED TO #home) ────────────────────────────────────
-  //
+  /* ======================================================================
+     8) Homepage slider (scoped to #home)
+  ====================================================================== */
   const homeSection = document.getElementById("home");
-  const homeSlider  = homeSection ? homeSection.querySelector(".slider") : null;
+  const homeSlider = homeSection ? homeSection.querySelector(".slider") : null;
 
   if (homeSlider) {
-    const slideDuration = 8000; // ms
+    const slideDuration = 8000;
 
     const slides = homeSlider.querySelectorAll(".slide");
     const prevBtn = homeSlider.querySelector(".prev-btn");
@@ -110,14 +274,12 @@
     let slideInterval = null;
     let currentSlideTyped = null;
 
-    function setActiveDot(i) {
-      dots.forEach((dot, idx) => {
-        dot.classList.toggle("active", idx === i);
-      });
-    }
+    const setActiveDot = (i) => {
+      dots.forEach((dot, idx) => dot.classList.toggle("active", idx === i));
+    };
 
-    function typeSlideTextFor(index) {
-      if (typeof Typed === "undefined") return;
+    const typeSlideTextFor = (index) => {
+      if (typeof window.Typed === "undefined") return;
 
       if (currentSlideTyped) currentSlideTyped.destroy();
 
@@ -133,9 +295,9 @@
         startDelay: 500,
         showCursor: false,
       });
-    }
+    };
 
-    function changeSlide(index) {
+    const changeSlide = (index) => {
       if (!slides.length) return;
 
       const nextIndex = (index + slides.length) % slides.length;
@@ -146,16 +308,16 @@
 
       setActiveDot(currentIndex);
       typeSlideTextFor(currentIndex);
-    }
+    };
 
-    function startSlideInterval() {
+    const startSlideInterval = () => {
       slideInterval = setInterval(() => changeSlide(currentIndex + 1), slideDuration);
-    }
+    };
 
-    function resetSlideInterval() {
+    const resetSlideInterval = () => {
       clearInterval(slideInterval);
       startSlideInterval();
-    }
+    };
 
     if (prevBtn) {
       prevBtn.addEventListener("click", () => {
@@ -183,10 +345,10 @@
     startSlideInterval();
   }
 
-  //
-  // ── TYPED.JS SITE TITLE & SUBTITLE ──────────────────────────────────────
-  //
-  if (typeof Typed !== "undefined") {
+  /* ======================================================================
+     9) Typed.js site title & subtitle
+  ====================================================================== */
+  if (typeof window.Typed !== "undefined") {
     const typedNameEl = document.querySelector("#typed-name");
     const typedRoleEl = document.querySelector("#typed-role");
 
@@ -197,7 +359,9 @@
         startDelay: 500,
         showCursor: false,
         loop: false,
-        onComplete(self) { if (self.cursor) self.cursor.remove(); }
+        onComplete(self) {
+          if (self.cursor) self.cursor.remove();
+        },
       });
     }
 
@@ -208,150 +372,67 @@
         startDelay: 1500,
         showCursor: false,
         loop: false,
-        onComplete(self) { if (self.cursor) self.cursor.remove(); }
+        onComplete(self) {
+          if (self.cursor) self.cursor.remove();
+        },
       });
     }
   }
 
-  //
-  // ── ABOUT SECTION ANIMATION ───────────────────────────────────────────────
-  //
-  function isElementVisible(el) {
-    const r = el.getBoundingClientRect();
-    return r.top <= window.innerHeight && r.bottom >= 0;
-  }
+  /* ======================================================================
+     10) About section animation (kept, but safe + lightweight)
+  ====================================================================== */
+  const aboutTargets = document.querySelectorAll(".about-text, .about-image");
+  if (aboutTargets.length) {
+    const isElementVisible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top <= window.innerHeight && r.bottom >= 0;
+    };
 
-  function animateAboutSection() {
-    document.querySelectorAll(".about-text, .about-image").forEach((el) => {
-      if (isElementVisible(el) && !el.classList.contains("animated")) {
-        el.classList.add("animated");
-      }
-    });
-  }
-
-  window.addEventListener("scroll", animateAboutSection);
-  animateAboutSection();
-
-  //
-  // ── SMOOTH SCROLL (jQuery) ───────────────────────────────────────────────
-  //
-  if (typeof $ !== "undefined") {
-    $(function () {
-      $('a[href*="#"]:not([href="#"])').click(function () {
-        if (
-          location.pathname.replace(/^\//, "") === this.pathname.replace(/^\//, "") &&
-          location.hostname === this.hostname
-        ) {
-          let target = $(this.hash);
-          target = target.length ? target : $("[name=" + this.hash.slice(1) + "]");
-          if (target.length) {
-            $("html, body").animate({ scrollTop: target.offset().top }, 1000);
-            return false;
-          }
+    const animateAboutSection = () => {
+      aboutTargets.forEach((el) => {
+        if (isElementVisible(el) && !el.classList.contains("animated")) {
+          el.classList.add("animated");
         }
       });
-    });
+    };
 
-    //
-    // ── CONTACT FORM SUBMISSION ─────────────────────────────────────────────
-    //
-    $("#contact-form").on("submit", function (e) {
-      e.preventDefault();
-      alert("Form submitted!");
-    });
-
-    //
-    // ── NAVBAR LINK CLICK EFFECT ───────────────────────────────────────────
-    //
-    $(".navbar-links a").on("click", function () {
-      $(".navbar-links a").removeClass("active");
-      $(this).addClass("active");
-      setTimeout(() => $(this).removeClass("active"), 500);
-    });
-
-    //
-    // ── SLIDE-IN ON SCROLL (jQuery) ─────────────────────────────────────────
-    //
-    $(window).on("scroll", function () {
-      $(".fade-in-slide").each(function () {
-        const offset = $(this).offset().top;
-        const winH = $(window).height();
-        const scrollP = $(window).scrollTop();
-        if (scrollP + winH > offset + winH / 4) {
-          $(this).css({ opacity: 1, transform: "translateY(0)" });
-        }
-      });
-    });
+    window.addEventListener("scroll", animateAboutSection, { passive: true });
+    animateAboutSection();
   }
 
-  //
-  // ── HAMBURGER MENU WITH ARIA ─────────────────────────────────────────────
-  //
-  const navbar = document.querySelector(".navbar");
-  const navbarMenu = document.querySelector("#navbar-menu");
-  const hamburgerBtn = document.querySelector(".hamburger");
-  const closeMenuBtn = document.querySelector(".close-menu-btn");
+  /* ======================================================================
+     11) Active navbar item on load (safer rules)
+        - page links: match by pathname
+        - in-page anchors: match by hash
+  ====================================================================== */
+  const setActiveNavbarItem = () => {
+    const links = document.querySelectorAll(".navbar-links a");
+    if (!links.length) return;
 
-  if (navbar && navbarMenu && hamburgerBtn && closeMenuBtn) {
-    const menuItems = navbarMenu.querySelectorAll("a");
+    const currentPath = window.location.pathname.split("/").pop() || "index.html";
+    const currentHash = window.location.hash;
 
-    hamburgerBtn.setAttribute("aria-expanded", "false");
-    navbarMenu.setAttribute("aria-hidden", "true");
-
-    function handleHamburgerClick() {
-      const expanded = hamburgerBtn.getAttribute("aria-expanded") === "true";
-      hamburgerBtn.setAttribute("aria-expanded", String(!expanded));
-      navbarMenu.setAttribute("aria-hidden", String(expanded));
-      navbarMenu.classList.toggle("active");
-      hamburgerBtn.style.display = "none";
-    }
-
-    function handleScroll() {
-      const scrollPos = window.pageYOffset;
-      const navbarH = navbar.offsetHeight;
-
-      if (scrollPos < navbarH) {
-        hamburgerBtn.style.opacity = "0";
-        setTimeout(() => (hamburgerBtn.style.display = "none"), 10);
-      } else if (!navbarMenu.classList.contains("active")) {
-        hamburgerBtn.style.display = "flex";
-        setTimeout(() => (hamburgerBtn.style.opacity = "1"), 10);
-      }
-    }
-
-    function collapsePanel() {
-      navbarMenu.classList.remove("active");
-      hamburgerBtn.setAttribute("aria-expanded", "false");
-      navbarMenu.setAttribute("aria-hidden", "true");
-
-      setTimeout(() => {
-        handleScroll();
-        if (!navbarMenu.classList.contains("active")) {
-          hamburgerBtn.style.opacity = "0";
-          hamburgerBtn.style.display = "flex";
-          setTimeout(() => (hamburgerBtn.style.opacity = "1"), 10);
-        }
-      }, 200);
-    }
-
-    hamburgerBtn.addEventListener("click", handleHamburgerClick);
-    closeMenuBtn.addEventListener("click", collapsePanel);
-    menuItems.forEach((item) => item.addEventListener("click", collapsePanel));
-
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleScroll);
-    handleScroll();
-  }
-
-  //
-  // ── ACTIVATE NAVBAR LINK ON LOAD ─────────────────────────────────────────
-  //
-  function setActiveNavbarItem() {
-    const url = window.location.href;
-    document.querySelectorAll(".navbar-links a").forEach((link) => {
+    links.forEach((link) => {
       const href = link.getAttribute("href") || "";
-      link.classList.toggle("active", href && url.includes(href));
+
+      // page links
+      if (href.endsWith(".html")) {
+        link.classList.toggle("active", href === currentPath);
+        return;
+      }
+
+      // in-page anchors
+      if (href.startsWith("#")) {
+        // If no hash, keep Home highlighted (only on index-style pages)
+        if (!currentHash && href === "#home") {
+          link.classList.add("active");
+        } else {
+          link.classList.toggle("active", href === currentHash);
+        }
+      }
     });
-  }
+  };
+
   setActiveNavbarItem();
 });
