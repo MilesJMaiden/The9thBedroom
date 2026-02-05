@@ -5,9 +5,10 @@
   - Blog post styling is GENERIC (blog-post), so ALL posts share one look.
   - Uses your shared styles.css + blogpost.js (no Influx-specific JS/CSS).
   - IMPROVEMENT:
-    - Incorporates more of styles.css (container widths, spacing tokens, blog-post-page rules).
-    - Implements page margins + better spacing by using .post-container + letting cards drive layout.
-    - DOES NOT remove or change the existing CONTENT (text/images/sections remain intact).
+    - Alternating section background colours (like index.html).
+    - Full-width alternating backgrounds (sections span viewport; content stays in .post-container).
+    - Cards keep hover gradient behaviour (handled in styles.css blog-post block).
+    - DOES NOT remove or change existing CONTENT.
 -->
 
 <!DOCTYPE html>
@@ -22,7 +23,7 @@
     content="Influx: a procedural multi-agent maintenance-and-sabotage simulation built in Unity (URP), featuring dungeon-style generation, prioritized FSM agents, and alien sabotage."
   />
 
-  <!-- inline critical CSS for skip-link & header/nav (matches your other pages) -->
+  <!-- inline critical CSS for skip-link & minimal nav paint -->
   <style>
     .skip-link {
       position: absolute;
@@ -48,72 +49,31 @@
       color: #fff;
     }
 
-    /* === BLOG POST LAYOUT PATCH (critical) =========================
-       Purpose:
-       - Use your existing styles.css tokens + widths (.post-container rules)
-       - Add clean page margins + consistent vertical rhythm
-       - Neutralise global section alternating backgrounds/borders/padding
-         ONLY for blog-post pages (so cards define spacing instead of <section>)
-       ============================================================= */
-    body.blog-post-page main#main {
-      display: block;
-      padding: 0; /* styles.css blog-post rules handle interior padding */
+    /* BLOG: alternate section backgrounds like index.html
+       (sections must be full-width; we wrap content with .post-container inside each section) */
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    /* Keep section padding like homepage rhythm (cards sit inside) */
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
     }
 
-    /* Use your existing "BLOG POST PAGES" block: .post-container width/padding */
-    .blog-post-page .post-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
+    /* Ensure first section doesn't hide under navbar (extra breathing room) */
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
     }
 
-    /* Kill global alternating section backgrounds/borders/padding on blog posts */
-    .blog-post-page main#main section,
-    .blog-post-page main#main section:nth-of-type(odd),
-    .blog-post-page main#main section:nth-of-type(even) {
-      background: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-    }
-
-    /* Give sections controlled vertical rhythm between cards */
-    .blog-post-page main#main .post-section {
-      padding: var(--space-3) 0;
-    }
-
-    /* Ensure the hero has comfortable top spacing under navbar */
-    .blog-post-page main#main .blog-post-hero {
-      padding: var(--space-5) 0 var(--space-3);
-    }
-
-    /* Improve figure spacing using your tokens (applies to existing markup) */
-    .blog-post-page .post-figure {
-      margin-top: var(--space-3);
-    }
-
-    /* Make sure code blocks don’t touch edges on small screens */
-    .blog-post-page pre {
-      margin-top: var(--space-3);
-    }
-
-    /* Post actions spacing (existing content unchanged) */
-    .blog-post-page .post-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin: var(--space-2) 0 var(--space-3);
-    }
-
-    /* Keep "Back to top" links spaced consistently */
-    .blog-post-page .post-nav {
-      margin-top: var(--space-3);
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
+    /* Ensure a clear gap before footer (space after last card area) */
+    body.blog-post-page main#main > section:last-of-type {
+      padding-bottom: var(--space-5);
     }
   </style>
 
-  <!-- preload main stylesheet (same pattern as your other pages) -->
+  <!-- preload main stylesheet -->
   <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="styles.css"></noscript>
 
@@ -126,7 +86,7 @@
     crossorigin="anonymous"
   >
 
-  <!-- Font Awesome (for footer icons; matches your other pages) -->
+  <!-- Font Awesome -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -139,8 +99,6 @@
 
   <!-- =========================================================
        HEADER / NAVBAR (MATCHES YOUR INDEX EXACTLY)
-       NOTE: On blog pages, the # anchors won't exist. That's OK —
-       the links remain consistent site-wide.
        ========================================================= -->
   <header>
     <nav class="navbar" role="navigation">
@@ -185,16 +143,16 @@
   </header>
 
   <!-- =========================================================
-       BLOG POST PAGE (GENERIC CLASSES)
-       IMPROVEMENT:
-       - Wrap content in .post-container (matches styles.css container width + padding)
-       - Use .post-section wrapper for consistent rhythm (no content removed)
+       BLOG POST PAGE
+       IMPORTANT:
+       - Sections are full-width (so alternating backgrounds work)
+       - Each section contains a .post-container for consistent margins
        ========================================================= -->
   <main id="main">
-    <div class="post-container">
 
-      <!-- HERO -->
-      <section class="blog-post-hero post-section" id="top">
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card">
             <p class="post-kicker">MSc VR/AR • Games Programming 2 (2024–25)</p>
@@ -230,7 +188,6 @@
             </div>
             <p class="post-caption">Square title banner for the Influx application (SQBanner.png).</p>
 
-            <!-- TOC (reuses your filter-bar styling conventions; still generic) -->
             <div class="post-toc" aria-label="Table of contents">
               <div class="filter-container">
                 <a class="filter-btn" href="#abstract">ABSTRACT</a>
@@ -242,17 +199,18 @@
                 <a class="filter-btn" href="#hud">HUD</a>
                 <a class="filter-btn" href="#camera">CAMERA</a>
                 <a class="filter-btn" href="#principles">PRINCIPLES</a>
-                <a class="filter-btn" href="#playtesting">PLAYTESTING</a>
                 <a class="filter-btn" href="#future">FUTURE</a>
                 <a class="filter-btn" href="#conclusion">CONCLUSION</a>
               </div>
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ABSTRACT -->
-      <section id="abstract" class="post-section">
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Abstract</h2>
@@ -275,10 +233,12 @@
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- CONTRIBUTIONS -->
-      <section id="contributions" class="post-section">
+    <!-- CONTRIBUTIONS -->
+    <section id="contributions" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Key Contributions</h2>
@@ -315,10 +275,12 @@
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- LEVEL SETTINGS -->
-      <section id="level-settings" class="post-section">
+    <!-- LEVEL SETTINGS -->
+    <section id="level-settings" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Level Design Settings</h2>
@@ -360,10 +322,12 @@ public class LevelDesignSettings : ScriptableObject {
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- INTERACTABLES -->
-      <section id="interactables" class="post-section">
+    <!-- INTERACTABLES -->
+    <section id="interactables" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Interactables</h2>
@@ -406,10 +370,12 @@ public abstract class Interactable : MonoBehaviour {
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- AI -->
-      <section id="ai" class="post-section">
+    <!-- AI -->
+    <section id="ai" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Agents &amp; Aliens AI</h2>
@@ -459,10 +425,12 @@ Update():
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- GENERATION -->
-      <section id="generation" class="post-section">
+    <!-- GENERATION -->
+    <section id="generation" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Level Generation &amp; Room Alerts</h2>
@@ -512,10 +480,12 @@ SafeArea ComputeSafeArea(float margin) {
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- HUD -->
-      <section id="hud" class="post-section">
+    <!-- HUD -->
+    <section id="hud" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">HUD &amp; Pause Management</h2>
@@ -550,10 +520,12 @@ overallAvg   = Average(computers + bins)
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- CAMERA -->
-      <section id="camera" class="post-section">
+    <!-- CAMERA -->
+    <section id="camera" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Camera Management</h2>
@@ -580,10 +552,12 @@ FocusOnLevel():
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- PRINCIPLES -->
-      <section id="principles" class="post-section">
+    <!-- PRINCIPLES -->
+    <section id="principles" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Design Principles &amp; Challenges</h2>
@@ -609,48 +583,12 @@ FocusOnLevel():
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- PLAYTESTING -->
-      <section id="playtesting" class="post-section">
-        <div class="blog-post-wrap">
-          <article class="blog-post-card fade-in-slide">
-            <h2 class="post-section-title">Playtesting</h2>
-            <p>
-              I ran informal playtesting with 8 participants (10–15 minutes each), followed by a short questionnaire covering procedural variety,
-              controls, AI clarity, balance, UI readability, and enjoyment.
-            </p>
-
-            <div class="grid-layout" style="margin-top: 1rem;">
-              <div class="mini">
-                <h4>Positive highlights</h4>
-                <p>Emergent chaos, procedural variety, smooth camera controls, and room-level alerts creating tension spikes.</p>
-              </div>
-              <div class="mini">
-                <h4>Areas for improvement</h4>
-                <p>Visual polish, deeper AI tuning/consistency, and stronger audio cues + optional background music.</p>
-              </div>
-            </div>
-
-            <div class="post-figure" style="margin-top: 1rem;">
-              <img src="playtest.jpg" alt="Participant playtesting via Itch.io" loading="lazy" />
-              <div class="cap">Participant playtesting session via Itch.io (playtest.jpg).</div>
-            </div>
-
-            <div class="post-figure">
-              <img src="QuestionnaireResults.png" alt="Questionnaire results chart" loading="lazy" />
-              <div class="cap">Questionnaire results summary (QuestionnaireResults.png).</div>
-            </div>
-
-            <div class="post-nav">
-              <a class="view-all-btn" href="#top">Back to top</a>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <!-- FUTURE -->
-      <section id="future" class="post-section">
+    <!-- FUTURE -->
+    <section id="future" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Future Work</h2>
@@ -702,10 +640,12 @@ FocusOnLevel():
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- CONCLUSION -->
-      <section id="conclusion" class="post-section">
+    <!-- CONCLUSION -->
+    <section id="conclusion" class="post-section">
+      <div class="post-container">
         <div class="blog-post-wrap">
           <article class="blog-post-card fade-in-slide">
             <h2 class="post-section-title">Conclusion</h2>
@@ -722,9 +662,9 @@ FocusOnLevel():
             </div>
           </article>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </div>
   </main>
 
   <!-- =========================================================

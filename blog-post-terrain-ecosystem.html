@@ -1,0 +1,1028 @@
+<!--
+  File: blog-post-terrain-ecosystem.html
+  Based on: blog-post-influx.html template
+  Notes:
+  - Navbar + footer markup matches your index.html EXACTLY (same classes/ids/ARIA) — unchanged.
+  - Styling remains GENERIC via styles.css + blogpost.js (no post-specific CSS/JS).
+  - Alternating full-width section backgrounds preserved.
+  - Content below is adapted from your LaTeX report into web sections + anchors.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Procedural Terrain and Ecosystem Simulator</title>
+  <meta
+    name="description"
+    content="Procedural Terrain and Ecosystem Simulator: hybrid terrain generation (Perlin, fBm, Voronoi biomes) with CA-based feature placement and NavMesh + FSM-driven agents in Unity."
+  />
+
+  <!-- inline critical CSS for skip-link & minimal nav paint -->
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+    }
+
+    /* Keep minimal nav paint while CSS loads (do not fight styles.css) */
+    header, .navbar {
+      background-color: #666;
+      color: #fff;
+    }
+
+    /* BLOG: alternate section backgrounds like index.html */
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    /* Keep section padding like homepage rhythm */
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    /* Ensure first section doesn't hide under navbar */
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    /* Ensure a clear gap before footer */
+    body.blog-post-page main#main > section:last-of-type {
+      padding-bottom: var(--space-5);
+    }
+  </style>
+
+  <!-- preload main stylesheet -->
+  <link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (MATCHES YOUR INDEX EXACTLY)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog" class="active">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE (FULL-WIDTH SECTIONS; CONTENT IN .post-container)
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">MATHEMATICS FOR GAMES AND V/AR</p>
+            <h1 class="post-title">Procedural Terrain and Ecosystem Simulator</h1>
+            <p class="post-subtitle">
+              An exploration of <strong>hybrid terrain generation</strong> (Perlin Noise, fBm, Voronoi biomes) with
+              <strong>Cellular Automata</strong> feature placement and <strong>NavMesh + FSM</strong> AI agents in Unity.
+            </p>
+
+            <div class="post-actions">
+              <!-- Update/remove these if you have public links -->
+              <a class="btn" href="projects.html" rel="noopener">Related Projects</a>
+              <a class="btn" href="blog.html" rel="noopener">All Blog Posts</a>
+            </div>
+
+            <div class="post-meta">
+              <div class="meta-box">
+                <p class="meta-label">Author(s)</p>
+                <p class="meta-value">Joshua James Davies, Saurabhkumar Ramanbhai Parmar, Carey Chen</p>
+              </div>
+              <div class="meta-box">
+                <p class="meta-label">Platform</p>
+                <p class="meta-value">Unity • Burst + Job System • AI Navigation (NavMesh)</p>
+              </div>
+              <div class="meta-box">
+                <p class="meta-label">Focus</p>
+                <p class="meta-value">Perlin / fBm / Voronoi biomes, CA placement, FSM ecosystems, real-time UI</p>
+              </div>
+            </div>
+
+            <div class="post-banner">
+              <!-- Replace with your preferred hero image if different -->
+              <img src="MountainTopGeneratedTerrain.png" alt="Generated mountain-top terrain" loading="lazy" />
+            </div>
+            <p class="post-caption">Generated mountain-top terrain (MountainTopGeneratedTerrain.png).</p>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#introduction">INTRODUCTION</a>
+                <a class="filter-btn" href="#team">TEAM</a>
+                <a class="filter-btn" href="#objectives">OBJECTIVES</a>
+                <a class="filter-btn" href="#architecture">ARCHITECTURE</a>
+                <a class="filter-btn" href="#pipeline">PIPELINE</a>
+                <a class="filter-btn" href="#ui">UI</a>
+                <a class="filter-btn" href="#camera">CAMERA</a>
+                <a class="filter-btn" href="#background">BACKGROUND</a>
+                <a class="filter-btn" href="#ca">CA FEATURES</a>
+                <a class="filter-btn" href="#ai">AI AGENTS</a>
+                <a class="filter-btn" href="#methodology">METHODOLOGY</a>
+                <a class="filter-btn" href="#results">RESULTS</a>
+                <a class="filter-btn" href="#applications">APPLICATIONS</a>
+                <a class="filter-btn" href="#conclusion">CONCLUSION</a>
+                <a class="filter-btn" href="#references">REFERENCES</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              This report explores the integration of various terrain generation algorithms, including Mid-Point Displacement,
+              Perlin Noise, Fractal Brownian Motion, and Voronoi Biomes, within a procedurally generated environment.
+              Instead of employing Cellular Automata for traditional 2D or 3D simulation like Conway’s Game of Life, we leverage CA rules
+              to place terrain features—such as rocks, grass patches, shrubs, and cacti—across the landscape in a systematic, natural-looking manner.
+              Additionally, we integrate Unity’s AI Navigation system to introduce basic ecological interactions via finite state machines (FSMs)
+              for predators (e.g., wolves), herbivores (e.g., deer), and smaller animals (e.g., squirrels). This study evaluates the effectiveness
+              of these methods in creating dynamic, interactive terrains suitable for real-time applications, with emphasis on the interplay between
+              procedural generation, AI-driven ecosystems, and user-defined parameters. Potential applications in game development, simulation-based
+              education, and research are discussed, alongside implementation details and performance considerations.
+            </p>
+
+            <div class="post-figure">
+              <img src="MountainTopGeneratedTerrain.png" alt="Generated mountain-top terrain overview" loading="lazy" />
+              <div class="cap">Generated mountain-top terrain (MountainTopGeneratedTerrain.png).</div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section id="introduction" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Introduction</h2>
+            <p>
+              With the increasing demand for expansive and dynamic virtual environments, procedural terrain generation enables automated creation of vast landscapes without
+              manual detailing. This project presents a <strong>hybrid terrain-generation system</strong> combining <strong>Perlin Noise</strong>,
+              <strong>Fractal Brownian Motion (fBm)</strong>, and <strong>Voronoi-based biome partitioning</strong>, driven by an interactive UI for real-time parameter control.
+              Beyond terrain shaping, a CA mechanism places environmental features (rocks, vegetation, cacti) in naturalistic clusters, while an AI layer using NavMesh and FSMs
+              simulates simplified predator–prey interactions (wolves, deer, squirrels).
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section id="team" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Team and Project Management</h2>
+
+            <h3>Team roles and responsibilities</h3>
+            <ul>
+              <li><strong>Joshua James Davies</strong>: Project Manager and Lead Developer; implemented all project code except the camera system; introduced GitHub + SourceTree workflow.</li>
+              <li><strong>Saurabhkumar Ramanbhai Parmar</strong>: Developed the camera system; researched Unity AI Navigation and supported ecosystem integration.</li>
+              <li><strong>Carey Chen</strong>: Advised on code architecture (modularity, scalability); developed supporting materials; contributed to documentation.</li>
+              <li><strong>Collaborative effort</strong>: Report writing shared across the team, accelerated by detailed UML-styled code comments.</li>
+            </ul>
+
+            <h3>Task distribution and workflow</h3>
+            <ul>
+              <li><strong>Terrain generation</strong>: Perlin Noise, fBm, Mid-Point Displacement (excluded), Voronoi biomes.</li>
+              <li><strong>Feature placement</strong>: Lakes, trails, and general features using CA.</li>
+              <li><strong>AI agents</strong>: Predators, herbivores, and small animals.</li>
+              <li><strong>Camera system</strong>: Designed/implemented by Saurabhkumar.</li>
+              <li><strong>Architecture + materials</strong>: Advised/developed with Carey’s support.</li>
+            </ul>
+
+            <h3>Management reflections</h3>
+            <ul>
+              <li><strong>Scope management</strong>: weekly reviews helped reduce over-ambitious goals (e.g., removing erosion/rivers).</li>
+              <li><strong>Collaboration</strong>: shared debugging and optimization decisions improved stability.</li>
+              <li><strong>Documentation</strong>: code comments reduced report-writing overhead and improved onboarding.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- OBJECTIVES -->
+    <section id="objectives" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Objectives and Scope</h2>
+
+            <p>
+              This project provides a hybrid terrain-generation system incorporating multiple noise-based algorithms, a Cellular Automata approach for object placement,
+              and an AI Navigation module for simplified predator–prey interactions. The Unity framework blends Perlin Noise, fBm, and Voronoi biomes for landscapes, applies
+              CA rules for feature distribution, and uses FSMs + NavMesh to simulate wolves, deer, and squirrels.
+            </p>
+
+            <h3>Project goals</h3>
+            <ul>
+              <li><strong>Terrain generation</strong>: integrate Perlin, fBm, Voronoi biomes to create distinct, tunable landscapes.</li>
+              <li><strong>CA feature placement</strong>: distribute objects in natural patterns (not erosion).</li>
+              <li><strong>Modifiers</strong>: trails and lakes to increase variety and designer control.</li>
+              <li><strong>AI navigation</strong>: NavMesh + FSMs for basic ecological interactions.</li>
+              <li><strong>Real-time UI</strong>: runtime tuning of parameters and feature toggles.</li>
+              <li><strong>Performance</strong>: evaluate stability under varying resolutions, densities, and agent counts.</li>
+            </ul>
+
+            <h3>Scope and deliverables</h3>
+            <ul>
+              <li>Procedural terrain engine (Perlin, fBm, Voronoi biomes).</li>
+              <li>CA-based object placement workflow.</li>
+              <li>Trail and lake modifiers.</li>
+              <li>NavMesh + FSM ecosystem simulation.</li>
+              <li>Interactive UI for parameter control and presets.</li>
+              <li>Documentation + evaluation with architecture and performance notes.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">System Architecture</h2>
+
+            <p>
+              The architecture integrates terrain generation, CA feature placement, and an interactive UI into a cohesive workflow.
+              It uses Unity’s Burst Compiler and Job System to parallelize intensive operations (noise evaluation, biome partitioning, CA updates),
+              improving performance and scalability.
+            </p>
+
+            <div class="post-figure">
+              <img src="Updated_Core Logic.png" alt="System architecture flowchart" loading="lazy" />
+              <div class="cap">System Architecture flowchart (Updated_Core Logic.png).</div>
+            </div>
+
+            <h3>Class structure overview</h3>
+            <ul>
+              <li><strong>TerrainGeneratorManager</strong>: orchestrates terrain generation, schedules height modifiers.</li>
+              <li><strong>FeatureManager</strong>: manages CA feature placement and instantiation.</li>
+              <li><strong>Job systems</strong>: each algorithm implements a consistent interface to schedule work.</li>
+              <li><strong>ScriptableObjects</strong>: settings assets centralize parameters for runtime tuning.</li>
+              <li><strong>UIManager</strong>: binds UI inputs to regeneration/update pathways.</li>
+            </ul>
+
+            <h3>Workflow</h3>
+            <ol>
+              <li>Initialize managers + read ScriptableObject configs.</li>
+              <li>Generate base heightmap via scheduled height modifier jobs.</li>
+              <li>Partition into biomes (Voronoi), apply biome-specific adjustments.</li>
+              <li>Initialize feature CA grids and schedule placement jobs.</li>
+              <li>Bake NavMesh and initialize AI agents + FSM behaviors.</li>
+              <li>Render and respond to UI changes (regenerate/update).</li>
+            </ol>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section id="pipeline" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Terrain Generation Pipeline</h2>
+
+            <p>
+              The pipeline synthesizes heightmaps and biome regions via modular jobs. Perlin/fBm shape macro structure, Voronoi partitions into biomes,
+              and material layering applies textures based on height/slope/biome.
+            </p>
+
+            <h3>Height modifier interface</h3>
+            <pre><code>public interface IHeightModifier
+{
+    JobHandle ScheduleJob(NativeArray&lt;float&gt; heights,
+                         int width,
+                         int length,
+                         TerrainGenerationSettings settings,
+                         JobHandle dependency);
+}</code></pre>
+
+            <h3>Perlin Noise job (excerpt)</h3>
+            <pre><code>[BurstCompile]
+public struct PerlinNoiseJob : IJobParallelFor
+{
+    [ReadOnly] public int width;
+    [ReadOnly] public int length;
+    [ReadOnly] public float baseScale;
+    [ReadOnly] public float amplitudeDecay;
+    [ReadOnly] public float frequencyGrowth;
+    [ReadOnly] public float2 offset;
+    [ReadOnly] public int layers;
+    public NativeArray&lt;float&gt; heights;
+
+    public void Execute(int index)
+    {
+        int x = index % width;
+        int y = index / width;
+        float normalizedX = x / (float)width;
+        float normalizedY = y / (float)length;
+
+        float heightValue = GeneratePerlinNoiseHeight(normalizedX, normalizedY);
+        heights[index] = math.clamp(heights[index] + heightValue, 0f, 1f);
+    }
+
+    private float GeneratePerlinNoiseHeight(float nx, float ny)
+    {
+        float total = 0f;
+        float amplitude = 1f;
+        float frequency = 1f;
+
+        for (int layer = 0; layer &lt; layers; layer++)
+        {
+            float xCoord = (nx * baseScale * frequency) + offset.x;
+            float yCoord = (ny * baseScale * frequency) + offset.y;
+
+            total += noise.cnoise(new float2(xCoord, yCoord)) * amplitude;
+            amplitude *= amplitudeDecay;
+            frequency *= frequencyGrowth;
+        }
+        return total;
+    }
+}</code></pre>
+
+            <h3>ScriptableObject configuration</h3>
+            <pre><code>[CreateAssetMenu(menuName = "Terrain/GenerationSettings")]
+public class TerrainGenerationSettings : ScriptableObject
+{
+    [Header("Perlin Noise Settings")]
+    public bool usePerlinNoise;
+    public int perlinLayers = 1;
+    public float perlinBaseScale = 10f;
+    public float perlinAmplitudeDecay = 0.5f;
+    public float perlinFrequencyGrowth = 2f;
+    public Vector2 perlinOffset = Vector2.zero;
+
+    [Header("Fractal Brownian Motion Settings")]
+    public bool useFractalBrownianMotion;
+    public int fBmLayers = 1;
+    public float fBmBaseScale = 10f;
+    public float fBmAmplitudeDecay = 0.5f;
+    public float fBmFrequencyGrowth = 2f;
+    public Vector2 fBmOffset = Vector2.zero;
+
+    [Header("Midpoint Displacement Settings")]
+    public bool useMidPointDisplacement;
+    public float displacementFactor = 2f;
+    public float displacementDecayRate = 0.5f;
+    public int randomSeed = 42;
+    public float roughness = 0.5f;
+    public float seed = 1f;
+
+    [Header("Voronoi Biomes Settings")]
+    public bool useVoronoiBiomes;
+    public int voronoiCellCount = 10;
+    public float voronoiBlendFactor = 0.5f;
+    public DistributionMode voronoiDistributionMode = DistributionMode.Random;
+    public List&lt;Biome&gt; biomes = new List&lt;Biome&gt;();
+
+    [Header("Feature Settings")]
+    public List&lt;FeatureEntry&gt; featureSettings = new List&lt;FeatureEntry&gt;();
+    public int featureCAIterations = 2;
+    public int featureNeighborThreshold = 3;
+    public float globalFeatureDensity = 1f;
+}</code></pre>
+
+            <div class="post-figure">
+              <img src="TerrainSOInspector.png" alt="TerrainGenerationSettings ScriptableObject inspector" loading="lazy" />
+              <div class="cap">Unity Inspector example of TerrainGenerationSettings (TerrainSOInspector.png).</div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- UI -->
+    <section id="ui" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Interactive User Interface</h2>
+            <p>
+              The runtime UI provides real-time control over terrain parameters, biome thresholds, CA settings, and feature toggles.
+              Changes trigger regeneration or incremental updates, enabling rapid iteration without restarting the application.
+            </p>
+
+            <h3>Example: toggle listener (Perlin Noise)</h3>
+            <pre><code>private void AddPerlinNoiseToggleListener(Toggle toggle, Action&lt;bool&gt; onChanged)
+{
+    toggle.onValueChanged.AddListener(value =&gt;
+    {
+        onChanged?.Invoke(value);
+        if (terrainGeneratorManager != null)
+        {
+            terrainGeneratorManager.RegenerateTerrain();
+            Debug.Log($"Perlin Noise toggled: {value}");
+        }
+    });
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAMERA -->
+    <section id="camera" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Camera Management</h2>
+
+            <p>
+              The CameraManager supports panning, zooming, rotation, and reset, while avoiding input conflicts with UI interactions via the EventSystem.
+              This enables comfortable exploration of generated terrains at runtime.
+            </p>
+
+            <h3>CameraManager (full listing)</h3>
+            <pre><code>using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class CameraManager : MonoBehaviour
+{
+    public float panSpeed = 20f;
+    public float rotationSpeed = 100f;
+    public float zoomSpeed = 50f;
+    public float minZoom = 10f;
+    public float maxZoom = 100f;
+
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
+    private Camera cam;
+
+    void Start()
+    {
+        cam = Camera.main;
+        initialPosition = cam.transform.position;
+        initialRotation = cam.transform.rotation;
+    }
+
+    void Update()
+    {
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        HandlePan();
+        HandleRotation();
+        HandleZoom();
+
+        if (Input.GetKeyDown(KeyCode.F))
+            ResetCamera();
+    }
+
+    void HandlePan()
+    {
+        Vector3 direction = Vector3.zero;
+        if (Input.GetMouseButton(0))
+        {
+            direction.x = -Input.GetAxis("Mouse X");
+            direction.z = -Input.GetAxis("Mouse Y");
+            cam.transform.Translate(direction * panSpeed * Time.deltaTime, Space.World);
+        }
+    }
+
+    void HandleRotation()
+    {
+        if (Input.GetMouseButton(1))
+        {
+            float rotX = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
+            float rotY = Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
+            cam.transform.RotateAround(Vector3.zero, Vector3.up, rotX);
+            cam.transform.RotateAround(Vector3.zero, cam.transform.right, rotY);
+        }
+    }
+
+    void HandleZoom()
+    {
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        cam.fieldOfView -= scroll * zoomSpeed;
+        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, minZoom, maxZoom);
+    }
+
+    void ResetCamera()
+    {
+        cam.transform.position = initialPosition;
+        cam.transform.rotation = initialRotation;
+        cam.fieldOfView = 60f; // default FOV
+    }
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACKGROUND -->
+    <section id="background" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Background and Literature Review</h2>
+
+            <h3>Procedural terrain generation</h3>
+            <p>
+              The system uses Perlin Noise for smooth gradients, fBm for multi-scale detail, and Voronoi cells to segment biomes.
+              Mid-point displacement is included as an optional method but excluded in the streamlined implementation.
+            </p>
+
+            <h3>Perlin Noise (excerpt)</h3>
+            <pre><code>private float GeneratePerlinNoiseHeight(float normalizedX, float normalizedY)
+{
+    float total = 0f;
+    float amplitude = 1f;
+    float frequency = 1f;
+
+    for (int layer = 0; layer &lt; layers; layer++)
+    {
+        float xCoord = (normalizedX * baseScale * frequency) + offset.x;
+        float yCoord = (normalizedY * baseScale * frequency) + offset.y;
+
+        total += noise.cnoise(new float2(xCoord, yCoord)) * amplitude;
+        amplitude *= amplitudeDecay;
+        frequency *= frequencyGrowth;
+    }
+    return total;
+}</code></pre>
+
+            <h3>Voronoi biome blending (excerpt)</h3>
+            <pre><code>public void Execute(int index)
+{
+    int x = index % width;
+    int y = index / width;
+
+    float2 currentPoint = new float2(x, y);
+    float minDistSquared = float.MaxValue;
+
+    foreach (float2 point in points)
+    {
+        float distSquared = math.distancesq(currentPoint, point);
+        minDistSquared = math.min(minDistSquared, distSquared);
+    }
+
+    float normalizedDistance = math.sqrt(minDistSquared) / maxDistance;
+    float biomeHeight = math.lerp(heightRange.x, heightRange.y, falloffSamples[sampleIndex]);
+    heights[index] = math.lerp(heights[index], biomeHeight, blendFactor);
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CA FEATURES -->
+    <section id="ca" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Cellular Automata for Feature Placement</h2>
+
+            <p>
+              CA is used exclusively for 2D surface feature placement (rocks, shrubs, cacti) to produce natural clustering without modifying the heightmap.
+              Feature rules are defined via FeatureSettings ScriptableObjects, and placement runs through a Burst + Jobs workflow followed by optional CA refinement passes.
+            </p>
+
+            <div class="post-figure">
+              <img src="CAFeatures.png" alt="Cellular Automata feature placement visualization" loading="lazy" />
+              <div class="cap">CA used for feature placement instantiation (CAFeatures.png).</div>
+            </div>
+
+            <h3>FeatureSettings (excerpt)</h3>
+            <pre><code>[CreateAssetMenu(menuName = "Terrain/Feature Settings")]
+public class FeatureSettings : ScriptableObject
+{
+    [Header("General Settings")]
+    public string featureName;
+    public bool enabled;
+    public GameObject prefab;
+
+    [Header("Placement Rules")]
+    public Vector2 heightRange = new Vector2(0f, 1f);
+    public Vector2 slopeRange = new Vector2(0f, 45f);
+    public float spawnProbability = 0.5f;
+
+    [Header("Biome Interaction")]
+    public bool requiresBiome;
+    public int biomeIndex;
+
+    [Header("Appearance Settings")]
+    public Vector2 scaleRange = new Vector2(1f, 1.5f);
+    public Vector2 rotationRange = new Vector2(0f, 360f);
+}</code></pre>
+
+            <h3>FeaturePlacementJob (excerpt)</h3>
+            <pre><code>[BurstCompile]
+public struct FeaturePlacementJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray&lt;float&gt; heightMap;
+    [WriteOnly] public NativeArray&lt;int&gt; placementMap;
+    [ReadOnly] public NativeArray&lt;int&gt; biomeIndices;
+    [ReadOnly] public int2 terrainSize;
+
+    [ReadOnly] public Vector2 heightRange;
+    [ReadOnly] public Vector2 slopeRange;
+    [ReadOnly] public float spawnProbability;
+    [ReadOnly] public int biomeIndex; // -1 =&gt; no biome restriction
+
+    public Unity.Mathematics.Random random;
+
+    public void Execute(int index)
+    {
+        int x = index % terrainSize.x;
+        int y = index / terrainSize.x;
+
+        float currentHeight = heightMap[index];
+        float slope = CalculateSlope(index);
+
+        bool biomeMatches = (biomeIndex == -1 || biomeIndices[index] == biomeIndex);
+
+        if (biomeMatches &&
+            currentHeight &gt;= heightRange.x &amp;&amp; currentHeight &lt;= heightRange.y &amp;&amp;
+            slope &gt;= slopeRange.x &amp;&amp; slope &lt;= slopeRange.y &amp;&amp;
+            random.NextFloat(0f, 1f) &lt;= spawnProbability)
+        {
+            placementMap[index] = 1;
+        }
+    }
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI AGENTS -->
+    <section id="ai" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">AI Agents and Navigation</h2>
+
+            <p>
+              The simulator integrates Unity’s AI Navigation (NavMesh) for agent pathfinding, and FSMs for behavior. Wolves hunt prey,
+              deer avoid risky areas (e.g., trails), and squirrels alternate between foraging and climbing depending on terrain context.
+              Agents can dynamically modify behavior based on a TerrainFeatureContext describing active terrain features.
+            </p>
+
+            <h3>Dynamic NavMesh baking</h3>
+            <pre><code>private void BakeNavMesh()
+{
+    if (navMeshSurface == null)
+    {
+        Debug.LogError("NavMeshSurface is not assigned.");
+        return;
+    }
+
+    navMeshSurface.BuildNavMesh();
+    Debug.Log("NavMesh baked successfully.");
+}</code></pre>
+
+            <div class="post-figure">
+              <img src="AI-Agents.png" alt="AI agents navigating across terrain presets" loading="lazy" />
+              <div class="cap">Wolves (red), deer (yellow), squirrels (green) navigating across preset terrain (AI-Agents.png).</div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- METHODOLOGY -->
+    <section id="methodology" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Proposed Methodology</h2>
+
+            <h3>Terrain generation</h3>
+            <ol>
+              <li><strong>Base heightmap</strong>: Perlin or fBm populates elevation values based on user settings.</li>
+              <li><strong>Biome overlay</strong>: Voronoi partitions into biome zones and applies localized rules.</li>
+              <li><strong>Post-processing</strong>: optional blending/smoothing to soften biome boundaries.</li>
+            </ol>
+
+            <h3>CA feature placement</h3>
+            <ul>
+              <li><strong>Grid definition</strong>: heightmap conceptualized as a 2D cell grid.</li>
+              <li><strong>Neighborhood rules</strong>: spawn/persist/remove rules based on thresholds + constraints.</li>
+              <li><strong>Iterations</strong>: run for small steps to cluster/disperse features.</li>
+            </ul>
+
+            <h3>Integration steps</h3>
+            <ol>
+              <li>Generate terrain + biomes.</li>
+              <li>Initialize CA grid using height/biome constraints.</li>
+              <li>Run CA iterations and compute placement maps.</li>
+              <li>Instantiate prefabs and finalize environment.</li>
+            </ol>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Expected Results and Deliverables</h2>
+
+            <h3>Dynamic terrain visualizations</h3>
+            <ul>
+              <li>Real-time switching between Perlin, fBm, Voronoi biomes (and optional methods).</li>
+              <li>Biome-specific texture blending with cohesive transitions.</li>
+              <li>Dynamic material layering by slope/altitude.</li>
+            </ul>
+
+            <div class="post-figure">
+              <img src="VoronoiBiomes.png" alt="Voronoi biomes applied to generated terrain" loading="lazy" />
+              <div class="cap">Voronoi biomes applied to generated terrain (VoronoiBiomes.png).</div>
+            </div>
+
+            <h3>Real-time preset switching</h3>
+            <ul>
+              <li>Immediate feedback for parameter tweaks.</li>
+              <li>Synchronized biome + texture updates without breaking ecosystem simulation.</li>
+            </ul>
+
+            <h3>Ecosystem simulations</h3>
+            <ul>
+              <li>Agent movement influenced by terrain and features.</li>
+              <li>Basic predator–prey interactions via FSMs.</li>
+              <li>Dynamic behavior modification through feature context.</li>
+            </ul>
+
+            <h3>Performance benchmarks</h3>
+            <ul>
+              <li>Compare runtime cost across terrain algorithms under varying resolutions.</li>
+              <li>Measure memory usage during regeneration and CA passes.</li>
+              <li>Track frame-rate impacts from agent counts and feature density.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section id="applications" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Applications and Future Work</h2>
+
+            <h3>Applications</h3>
+            <ul>
+              <li><strong>Game development</strong>: rapid prototyping of biomes and ecological detail for open-world/sandbox systems.</li>
+              <li><strong>Simulation and training</strong>: platform for studying spatial distributions and basic agent behaviors.</li>
+              <li><strong>Archaeological / urban sims</strong>: swap assets and rules for man-made distributions and layouts.</li>
+              <li><strong>VR/AR experiences</strong>: dynamic, real-time environments for immersive demos and education.</li>
+            </ul>
+
+            <h3>Future work</h3>
+            <ul>
+              <li>Richer ecosystem modeling (social behaviors, renewal cycles, flocking/herding).</li>
+              <li>Expanded biome diversity (wetlands, tundra, specialized flora/fauna).</li>
+              <li>Higher-fidelity placement rules (moisture/sunlight, micro-slope sampling).</li>
+              <li>Networked multi-user editing for collaborative design/research.</li>
+              <li>Real-world data overlays (heightmaps/satellite data + generative layers).</li>
+              <li>Performance scaling (quadtrees, GPU compute, smarter culling).</li>
+              <li>AI upgrades (behavior trees, utility AI, deeper context coupling).</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Conclusion</h2>
+            <p>
+              This project demonstrates an integrated framework for procedural terrain generation, lightweight CA feature placement, and basic AI-driven ecosystems.
+              By combining Perlin Noise, fBm, and Voronoi partitioning, the system produces distinct biome zones and complex landscapes in real time.
+              CA rules yield natural-looking distributions of surface objects while remaining tunable and computationally light. NavMesh + FSM agents introduce
+              rudimentary predator–prey dynamics, increasing believability and interactivity. Future work can expand biome blending, CA interactions, and AI
+              decision-making while retaining the modular architecture and real-time configurability.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References</h2>
+
+            <p>
+              The original report includes a full bibliography (Conway, Perlin, Ebert, Voronoi, Galin, Smelik, Russell &amp; Norvig, and others),
+              plus asset sources used during development (OpenGameArt and Itch.io packs).
+            </p>
+
+            <ul>
+              <li>Ken Perlin — “An Image Synthesizer” (1985)</li>
+              <li>Galin et al. — “Procedural Generation of Terrain Combining Noise Functions and Cellular Automata” (2010)</li>
+              <li>Smelik et al. — “A Survey on Procedural Modelling for Virtual Worlds” (2014)</li>
+              <li>Russell &amp; Norvig — “Artificial Intelligence: A Modern Approach” (2010)</li>
+              <li>Additional references as listed in the report bibliography.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (MATCHES YOUR INDEX EXACTLY)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Blog-post JS (dedicated) -->
+  <script defer src="js/blogpost.js"></script>
+</body>
+</html>
