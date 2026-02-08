@@ -29,7 +29,7 @@
     crossorigin="anonymous"
   />
 
-  <!-- Font Awesome (only if you use <i> icons; safe to keep) -->
+  <!-- Font Awesome -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -42,13 +42,11 @@
 
   <header>
     <nav class="navbar" role="navigation">
-      <!-- logo + text (MATCHES INDEX/PROJECTS) -->
       <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
         <img src="images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
         <span class="logo-text">9TH BEDROOM</span>
       </a>
 
-      <!-- Primary nav -->
       <div class="navbar-links">
         <a href="index.html">Home</a>
         <a href="index.html#about">About</a>
@@ -58,7 +56,6 @@
         <a href="cv.html">Contact</a>
       </div>
 
-      <!-- Hamburger toggle -->
       <button
         class="hamburger"
         type="button"
@@ -73,7 +70,6 @@
         </svg>
       </button>
 
-      <!-- Slide-in mobile menu -->
       <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
         <a role="menuitem" href="index.html#home">Home</a>
         <a role="menuitem" href="index.html#about">About</a>
@@ -87,57 +83,44 @@
   </header>
 
   <main id="main">
-<!-- Blog -->
-<section id="blog" class="fade-in-slide">
-  <h2 class="section-header">Blog</h2>
+    <section id="blog" class="fade-in-slide">
+      <div class="container">
+        <h2 class="section-header">Blog</h2>
 
-  <div class="container">
-    <!-- Blog summary 1 (UPDATED: links to Influx post) -->
-    <div class="project-card left">
-      <div class="project-image">
-        <img src="SQBanner.png" alt="Games Programming 2: Influx — blog post cover" loading="lazy" />
-      </div>
-      <div class="project-info">
-        <h3>Games Programming 2: Influx</h3>
-        <p>
-          A procedural, dungeon-style maintenance-vs-sabotage simulation built in Unity (URP).
-          Covers frontier-based room placement, NavMesh linking, prioritized FSM agents, interactables, HUD/pause, and room alert systems.
-        </p>
-        <a href="blog-post-influx.html" class="btn">Read More</a>
-      </div>
-    </div>
+        <!-- Controls row -->
+        <div class="blog-controls" aria-label="Blog controls">
+          <div class="blog-control">
+            <label for="blogSort" class="blog-control-label">Sort by</label>
+            <select id="blogSort" class="blog-select" aria-label="Sort blog posts">
+              <option value="newest" selected>Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="alpha">Alphabetical</option>
+            </select>
+          </div>
 
-    <!-- Blog summary 2 -->
-    <div class="project-card right">
-      <div class="project-image">
-        <img src="images/placeholder-blog-2.jpg" alt="Blog post placeholder image 2" loading="lazy" />
+          <div class="blog-control">
+            <label for="blogCategory" class="blog-control-label">Category</label>
+            <select id="blogCategory" class="blog-select" aria-label="Filter blog posts by category">
+              <option value="all" selected>All</option>
+              <!-- JS populates tag options dynamically -->
+            </select>
+          </div>
+        </div>
       </div>
-      <div class="project-info">
-        <h3>Placeholder Blog Post #2</h3>
-        <p>
-          Another summary block matching the Projects layout. Keep this ~2–4 sentences. If you want, add the
-          date, tags, or reading time later.
-        </p>
-        <a href="blog-post-2.html" class="btn">Read More</a>
-      </div>
-    </div>
 
-    <!-- Blog summary 3 -->
-    <div class="project-card left">
-      <div class="project-image">
-        <img src="images/placeholder-blog-3.jpg" alt="Blog post placeholder image 3" loading="lazy" />
+      <!-- Dynamic bands mount -->
+      <div class="blog-bands" id="blogBands" aria-live="polite"></div>
+
+      <!-- Load more -->
+      <div class="container">
+        <div class="blog-load-more">
+          <button id="blogLoadMore" type="button" class="btn btn-load-more">
+            Load More
+          </button>
+          <p id="blogLoadMoreHint" class="blog-load-more-hint" aria-live="polite"></p>
+        </div>
       </div>
-      <div class="project-info">
-        <h3>Placeholder Blog Post #3</h3>
-        <p>
-          Third placeholder entry. Once you have real posts, swap the image + title + snippet + link target.
-          The card styling will remain identical to your Projects page.
-        </p>
-        <a href="blog-post-3.html" class="btn">Read More</a>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
   </main>
 
   <footer>
@@ -174,10 +157,7 @@
     </div>
   </footer>
 
-  <!-- Scripts (de-duped, deferred) -->
   <script defer src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-
-  <!-- Page script -->
   <script defer src="js/blog.js"></script>
 </body>
 </html>

@@ -1,0 +1,712 @@
+<!--
+  File: blog-post-tetroid-tetris-ai.html
+
+  Notes:
+  - Matches the same site blog-post template used in your previous posts (navbar, alternating section bands, post-container).
+  - Replace image paths (HistogramResults30.png, etc.) to match your project structure.
+  - If your navbar links should route to index sections, swap "#about" etc. for "index.html#about".
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Tetroid: A Heuristic Tetris AI using Beam Search</title>
+  <meta
+    name="description"
+    content="Tetroid: a heuristic Tetris AI using weighted board features and a recursive beam search with lookahead (d=3, B=3, γ=0.9). Includes results, failure modes, and improvements."
+  />
+
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus { position: static; width: auto; height: auto; }
+
+    header, .navbar { background-color: #666; color: #fff; }
+
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    pre { overflow-x: auto; }
+    pre code { white-space: pre; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .meta-tile {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .meta-tile .k { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+    .meta-tile .v { font-weight: 700; margin: 6px 0 0; }
+
+    .post-figure { margin-top: 18px; }
+    .post-figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #ccc; }
+    .post-figure .cap { font-size: 0.9rem; opacity: 0.9; margin-top: 8px; }
+
+    .callout {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.7);
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+    .callout h3 { margin-top: 0; }
+
+    .pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top: 10px; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid #ccc; border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+    .pill i { opacity: 0.85; }
+
+    table.basic {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table.basic th, table.basic td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+    table.basic th { background: rgba(0,0,0,0.06); }
+    table.basic tr:last-child td { border-bottom: none; }
+
+    .ref-list { margin: 0; padding-left: 18px; }
+    .ref-list li { margin-bottom: 8px; }
+  </style>
+
+  <link rel="preload" href="../styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="../styles.css"></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (TEMPLATE-MATCH)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="../images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog" class="active">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">Game AI • Search • Heuristics • Tetris</p>
+
+            <h1 class="post-title">
+              Tetroid: <em>A Heuristic Tetris AI using Beam Search</em>
+              <span style="display:block; font-size:0.7em; font-weight:400; opacity:0.9;">
+                Weighted features + discounted lookahead planning (d=3, B=3, γ=0.9)
+              </span>
+            </h1>
+
+            <p class="post-subtitle">
+              This post summarizes <strong>Tetroid</strong>, an autonomous Tetris-playing AI that evaluates board states using a weighted heuristic
+              feature vector and selects moves with a recursive beam search. The goal is to balance short-term line clears with long-term stability
+              by exploring future placements and maximizing a discounted cumulative score.
+            </p>
+
+            <div class="post-actions">
+              <a class="btn" href="blog.html">Back to Blog</a>
+              <a class="btn" href="cv.html">Contact</a>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-tile">
+                <p class="k">Author</p>
+                <p class="v">Joshua J. Davies</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Core idea</p>
+                <p class="v">Heuristic evaluation + beam search</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Search parameters</p>
+                <p class="v">Depth d=3 • Beam B=3 • Discount γ=0.9</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Evaluation</p>
+                <p class="v">30 runs • Median 114,701 • Mean 188,893.5</p>
+              </div>
+            </div>
+
+            <div class="pill-row" aria-label="Quick highlights">
+              <span class="pill"><i class="fas fa-search"></i>Lookahead planning</span>
+              <span class="pill"><i class="fas fa-sliders-h"></i>8-feature heuristic</span>
+              <span class="pill"><i class="fas fa-chart-bar"></i>Score distribution</span>
+              <span class="pill"><i class="fas fa-bug"></i>Failure-mode analysis</span>
+              <span class="pill"><i class="fas fa-lightbulb"></i>Improvements roadmap</span>
+            </div>
+
+            <div class="callout">
+              <h3 style="margin-bottom:8px;">TL;DR</h3>
+              <ul style="margin:0; padding-left: 18px;">
+                <li><strong>State scoring:</strong> linear weighted sum of line clears + terrain/structure penalties.</li>
+                <li><strong>Decision-making:</strong> beam search keeps only the top B candidate states per depth to stay fast.</li>
+                <li><strong>Outcome:</strong> consistently strong heuristic play; performance limited mainly by horizon and simulation validity.</li>
+              </ul>
+            </div>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#problem">WHY TETRIS IS HARD</a>
+                <a class="filter-btn" href="#heuristics">HEURISTIC FEATURES</a>
+                <a class="filter-btn" href="#search">BEAM SEARCH</a>
+                <a class="filter-btn" href="#results">RESULTS</a>
+                <a class="filter-btn" href="#discussion">DISCUSSION</a>
+                <a class="filter-btn" href="#failures">FAILURE MODES</a>
+                <a class="filter-btn" href="#improvements">IMPROVEMENTS</a>
+                <a class="filter-btn" href="#refs">REFERENCES</a>
+              </div>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              <strong>Tetroid</strong> is a heuristic-driven AI agent designed to play
+              :contentReference[oaicite:0]{index=0} autonomously. It evaluates candidate placements using a weighted feature function
+              (e.g., lines cleared, aggregate height, holes, bumpiness, wells, center deviation, landing height, locked spaces) and selects moves via
+              a recursive beam search that plans ahead across upcoming pieces. By maximizing a discounted cumulative score, Tetroid avoids greedy line clears
+              that create long-term instability, while still prioritizing survival-critical clears.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY TETRIS IS HARD -->
+    <section id="problem" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Why Tetris is Hard</h2>
+
+            <p>
+              Tetris is challenging for AI because decisions have delayed consequences: a placement that clears a line now can introduce holes or awkward
+              geometry that becomes fatal several pieces later. The branching factor is large (rotations × columns × drop outcomes), and the game is
+              effectively unbounded in time, meaning “good” play is survival-oriented rather than reaching a terminal win state.
+            </p>
+
+            <p>
+              Historically, strong approaches often combine a compact, interpretable feature set with search: a good evaluation function can outperform more
+              complex strategies in this domain when paired with lookahead. Tetroid follows that tradition—treating Tetris as “evaluate-and-plan” rather than
+              learning a policy end-to-end.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HEURISTICS -->
+    <section id="heuristics" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Heuristic Features and Weights</h2>
+
+            <p>
+              Tetroid scores a post-placement board state using a linear evaluation function. Positive weight rewards progress (line clears), while negative
+              weights penalize structural risk (height, holes, uneven terrain, trapping).
+            </p>
+
+            <pre><code>E(state) =
+  w_lines      * lines_cleared
++ w_aggHeight  * aggregate_height
++ w_holes      * holes
++ w_bumpiness  * bumpiness
++ w_wells      * wells
++ w_centerDev  * center_deviation
++ w_landHeight * landing_height
++ w_locked     * locked_spaces</code></pre>
+
+            <table class="basic" aria-label="Heuristic weights table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Weight</th>
+                  <th>Intent</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Complete lines</td>
+                  <td><strong>+0.760666</strong></td>
+                  <td>Reward clears (survival + score proxy).</td>
+                </tr>
+                <tr>
+                  <td>Aggregate height</td>
+                  <td><strong>-0.510066</strong></td>
+                  <td>Penalize tall stacks (reduces top-out risk).</td>
+                </tr>
+                <tr>
+                  <td>Holes</td>
+                  <td><strong>-0.356630</strong></td>
+                  <td>Strongly penalize inaccessible empty cells under blocks.</td>
+                </tr>
+                <tr>
+                  <td>Bumpiness</td>
+                  <td><strong>-0.184483</strong></td>
+                  <td>Prefer flatter surfaces (more placements remain legal).</td>
+                </tr>
+                <tr>
+                  <td>Wells</td>
+                  <td><strong>-0.500000</strong></td>
+                  <td>Discourage deep single-column pits that become traps.</td>
+                </tr>
+                <tr>
+                  <td>Center deviation</td>
+                  <td><strong>-0.100000</strong></td>
+                  <td>Promote balance (avoid lopsided stacks).</td>
+                </tr>
+                <tr>
+                  <td>Landing height</td>
+                  <td><strong>-0.050000</strong></td>
+                  <td>Prefer lower lock-in to preserve headroom.</td>
+                </tr>
+                <tr>
+                  <td>Locked spaces</td>
+                  <td><strong>-0.200000</strong></td>
+                  <td>Penalize trapped blocks above holes (burial risk).</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout">
+              <h3>Design rationale</h3>
+              <p style="margin:0;">
+                The first four weights match the classic “El-Tetris” style vector (clear lines; avoid height/holes/roughness). Wells and landing height
+                align with Dellacherie-style feature ideas. Center deviation and locked spaces act as practical stabilizers: they bias away from brittle
+                geometries that a shallow search horizon can’t always repair in time.
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEAM SEARCH -->
+    <section id="search" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Recursive Beam Search Strategy</h2>
+
+            <p>
+              Exhaustively searching all move sequences is infeasible, so Tetroid uses <strong>beam search</strong> to retain only the top <em>B</em> states
+              per depth. This provides lookahead planning while keeping computation bounded.
+            </p>
+
+            <ol>
+              <li>Enumerate all legal placements for the current piece.</li>
+              <li>Expand successors up to depth <strong>d</strong>, but keep only the best <strong>B</strong> states at each layer.</li>
+              <li>Score sequences using a discounted sum with <strong>γ = 0.9</strong>.</li>
+              <li>Execute the first move of the best sequence; repeat every piece.</li>
+            </ol>
+
+            <pre><code>S = E(s1) + γ E(s2) + γ² E(s3) + ... + γ^(d-1) E(sd)</code></pre>
+
+            <div class="callout">
+              <h3>Chosen parameters</h3>
+              <ul style="margin:0; padding-left:18px;">
+                <li><strong>d = 3</strong> (lookahead depth)</li>
+                <li><strong>B = 3</strong> (beam width)</li>
+                <li><strong>γ = 0.9</strong> (discount factor)</li>
+              </ul>
+              <p style="margin:10px 0 0;">
+                This configuration gives enough foresight to avoid many “greedy traps” (like quick clears that create holes), while staying lightweight
+                enough to run interactively.
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Results and Performance</h2>
+
+            <p>
+              Tetroid was evaluated over <strong>30 independent games</strong>. The distribution of final scores shows a wide spread (expected in Tetris due to
+              piece sequence variance and horizon effects), with a <strong>median score of 114,701</strong> and a <strong>mean score of 188,893.5</strong>.
+            </p>
+
+            <div class="post-figure">
+              <img
+                src="HistogramResults30.png"
+                alt="Histogram of final scores over 30 Tetroid runs"
+                loading="lazy"
+              />
+              <div class="cap">Histogram of final scores over 30 runs (HistogramResults30.png).</div>
+            </div>
+
+            <h3>Qualitative behavior</h3>
+            <ul>
+              <li><strong>Surface shaping:</strong> aims for flatter stacks; fixes spikes early (bumpiness penalty).</li>
+              <li><strong>Hole aversion:</strong> strongly avoids creating holes; repairs quickly when unavoidable.</li>
+              <li><strong>Non-greedy clears:</strong> sometimes delays a clear if the lookahead sees a better stabilizing sequence.</li>
+              <li><strong>Occasional “clever” placements:</strong> overhang-like structures can appear when the search predicts resolution.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- DISCUSSION -->
+    <section id="discussion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Discussion: What Worked Well</h2>
+
+            <ul>
+              <li>
+                <strong>Line clearing as a survival primitive:</strong> a strong positive line-clear reward keeps board height manageable and reduces risk.
+              </li>
+              <li>
+                <strong>Holes as the “main enemy”:</strong> penalizing holes produces a noticeable improvement in stability; most losses occur after hole
+                accumulation or burial.
+              </li>
+              <li>
+                <strong>Beam search foresight:</strong> even a depth of 3 often prevents immediate gratification moves that set up dead boards a few pieces later.
+              </li>
+              <li>
+                <strong>Interpretable control:</strong> feature weights make behavior explainable and debuggable—useful for iterative refinement.
+              </li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAILURES -->
+    <section id="failures" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Failure Modes and Limitations</h2>
+
+            <h3>1) Illegal/overlapping placements (simulation validity)</h3>
+            <p>
+              Occasionally the AI attempts moves that result in overlapping pieces or invalid placements (often near walls/rotations), indicating a bug or edge
+              case in the move generator / collision validation rather than the heuristic itself. This can cause avoidable losses or corrupted evaluations.
+            </p>
+
+            <h3>2) Shallow horizon (search depth)</h3>
+            <p>
+              With <strong>d=3</strong>, Tetroid can be surprised by longer-term dependencies (e.g., building a well expecting an I-piece soon, but the required
+              piece arrives later than the horizon). The discount factor can also reduce the perceived value of “temporary ugliness” that pays off after more
+              than 3 moves.
+            </p>
+
+            <h3>3) Weight balance edge cases</h3>
+            <p>
+              Strong penalties (height/holes) can sometimes over-correct: the AI may avoid a short-lived hole that would be trivially repaired next piece,
+              particularly if the repair sits just outside the horizon or is discounted heavily.
+            </p>
+
+            <h3>4) No adaptation / learning</h3>
+            <p>
+              The agent’s weights are static. Without optimization or learning, the AI repeats the same failure patterns rather than tuning away from them over time.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPROVEMENTS -->
+    <section id="improvements" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Improvements Roadmap</h2>
+
+            <table class="basic" aria-label="Improvements table">
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Proposed improvement</th>
+                  <th>Expected effect</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Move validity</td>
+                  <td>Harden collision + rotation logic; unit tests across wall-kicks / edge placements.</td>
+                  <td>Removes illegal moves and improves evaluation reliability.</td>
+                </tr>
+                <tr>
+                  <td>Search</td>
+                  <td>Increase d/B where feasible; consider iterative deepening or selective expansion.</td>
+                  <td>Better long-horizon planning; fewer “surprise” deaths.</td>
+                </tr>
+                <tr>
+                  <td>Features</td>
+                  <td>Add transitions (row/column), more nuanced well metrics, pattern detectors (e.g., safe Tetris setup).</td>
+                  <td>Improves discrimination between superficially similar boards.</td>
+                </tr>
+                <tr>
+                  <td>Weight tuning</td>
+                  <td>Offline optimization (GA / cross-entropy / RL) to refine weights for your exact ruleset.</td>
+                  <td>Higher scores + stronger stability without manual guesswork.</td>
+                </tr>
+                <tr>
+                  <td>Modern mechanics</td>
+                  <td>Add hold-piece branching and preview utilization (if ruleset supports it).</td>
+                  <td>Much stronger tactical flexibility; fewer forced bad placements.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout">
+              <h3>Pragmatic next step</h3>
+              <p style="margin:0;">
+                Fixing overlap/invalid move generation yields the biggest immediate win because it upgrades the integrity of every downstream decision:
+                the heuristic and search are only as good as the simulator.
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="refs" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References / Inspiration</h2>
+
+            <p>
+              This project sits in a long tradition of heuristic Tetris controllers. The sources below are the same ones referenced in your IEEE report.
+              (If you want, I can convert these into your site’s standard “link card” style as well.)
+            </p>
+
+            <ul class="ref-list">
+              <li>
+                C. Fahey — <em>Computer Plays Tetris</em> (2003).
+              </li>
+              <li>
+                :contentReference[oaicite:1]{index=1} — “I Created An A.I. to DESTROY Tetris” (2020).
+              </li>
+              <li>
+                C. Thiery &amp; B. Scherrer — “Building Controllers for Tetris” (ICGA Journal, 2009).
+              </li>
+              <li>
+                R. Totologic — “Tetris AI explained” (2013).
+              </li>
+              <li>
+                “Tetris AI – The (Near) Perfect Player” (Code My Road, 2013).
+              </li>
+              <li>
+                G. Szita &amp; A. Lőrincz — “Learning Tetris Using the Noisy Cross-Entropy Method” (2006).
+              </li>
+              <li>
+                M. H. F. Wilkinson et al. — “The Game of Tetris in Machine Learning” (arXiv, 2019).
+              </li>
+            </ul>
+
+            <div class="callout">
+              <h3>Video</h3>
+              <p style="margin:0;">
+                Demo link (from the report): <strong>https://www.youtube.com/watch?v=KYtggnKUads</strong>
+                <br/>
+                (If you want this to render as a clickable button, tell me the component/class names you used for external links in your template.)
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (TEMPLATE-MATCH)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <script defer src="js/blogpost.js"></script>
+</body>
+</html>

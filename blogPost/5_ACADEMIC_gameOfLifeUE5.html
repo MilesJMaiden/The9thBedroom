@@ -1,0 +1,749 @@
+<!--
+  File: blog-post-ue55-cellular-automata.html
+
+  Notes:
+  - Keeps the same overall structure/classes as your Influx blog-post template.
+  - Alternating full-width section backgrounds (like your index.html), while content stays constrained in .post-container.
+  - Image paths mirror your LaTeX (Images/...).
+  - Update navbar anchor links to index.html#... if you want cross-page navigation.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>A Modular Cellular Automata Framework in Unreal Engine 5.5</title>
+  <meta
+    name="description"
+    content="A modular C++ + Blueprint framework for Conway's Game of Life in Unreal Engine 5.5: pattern actors, designer-friendly parameters, smooth fading visuals, and performance-oriented grid management."
+  />
+
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+    }
+
+    header, .navbar {
+      background-color: #666;
+      color: #fff;
+    }
+
+    /* Alternating full-width bands */
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    body.blog-post-page main#main > section:last-of-type {
+      padding-bottom: var(--space-5);
+    }
+
+    pre code { white-space: pre; }
+
+    /* Optional: small “meta grid” polish without fighting your stylesheet */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .meta-tile {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .meta-tile .k { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+    .meta-tile .v { font-weight: 700; margin: 6px 0 0; }
+  </style>
+
+  <link rel="preload" href="../styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="../styles.css"></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (TEMPLATE-MATCH)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="../images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog" class="active">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">MSc VR/AR • Programming for Game Engines • 07/04/2025</p>
+            <h1 class="post-title"><em>A Modular Cellular Automata Framework in Unreal Engine 5.5</em></h1>
+
+            <p class="post-subtitle">
+              This post documents a custom, modular implementation of Conway’s Game of Life built in Unreal Engine 5.5 using C++ for simulation
+              and Blueprint-exposed parameters for iteration, visuals, and pattern orchestration. The result is a flexible framework for classic
+              emergent behaviours—still lifes, oscillators, and spaceships—augmented with smooth opacity fading and optional 3D mesh animation.
+            </p>
+
+            <div class="post-actions">
+              <a class="btn" href="blog.html">Back to Blog</a>
+              <a class="btn" href="cv.html">Contact</a>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-tile">
+                <p class="k">Author</p>
+                <p class="v">Joshua J. Davies</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Institution</p>
+                <p class="v">:contentReference[oaicite:0]{index=0}</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Core class</p>
+                <p class="v">ACellularAutomataManager</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Demo video</p>
+                <p class="v">
+                  <a href="https://www.youtube.com/watch?v=4pVwvUGQDT4" target="_blank" rel="noopener">YouTube</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="post-banner">
+              <img
+                src="Images/CASim.png"
+                alt="Example screenshot of a running cellular automaton in Unreal Engine 5.5"
+                loading="lazy"
+              />
+            </div>
+            <p class="post-caption">Example screenshot of a running cellular automaton in Unreal Engine 5.5 (Images/CASim.png).</p>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#introduction">INTRODUCTION</a>
+                <a class="filter-btn" href="#overview">PROGRAM OVERVIEW</a>
+                <a class="filter-btn" href="#class-overview">CLASS OVERVIEW</a>
+                <a class="filter-btn" href="#code-map">CODE MAP</a>
+                <a class="filter-btn" href="#key-figures">KEY FIGURES & CODE</a>
+                <a class="filter-btn" href="#implementation">IMPLEMENTATION DETAILS</a>
+                <a class="filter-btn" href="#future">FUTURE WORK</a>
+                <a class="filter-btn" href="#conclusion">CONCLUSION</a>
+                <a class="filter-btn" href="#references">REFERENCES</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              This project presents a custom and modular implementation of Conway’s Game of Life inside Unreal Engine 5.5. The framework combines
+              C++ classes for efficient simulation with Blueprint-exposed parameters and real-time visual effects. A central
+              <code>ACellularAutomataManager</code> maintains grid state, performs neighbour-rule updates, spawns cell actors dynamically, and applies
+              a library of well-known patterns (still lifes, oscillators, spaceships). Visual enhancements—opacity fading and optional mesh transforms—
+              provide smooth iteration and a clear read on emergent behaviour. The outcome is a designer-friendly foundation that reproduces Life’s
+              classic dynamics while staying open to future expansions (alternate rule sets, scenarios, UI tooling, and 3D variants).
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section id="introduction" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Introduction</h2>
+
+            <p>
+              Cellular automata are discrete computational systems where simple local rules can yield complex emergent behaviour at scale. Among these,
+              the Game of Life—introduced by :contentReference[oaicite:1]{index=1} in 1970—remains a canonical example,
+              known for stable “still life” structures, periodic oscillators, and moving “spaceships”.
+            </p>
+
+            <h3>Life rules (neighbour-based constraints)</h3>
+            <ul>
+              <li>A live cell with fewer than two neighbours dies (under-population).</li>
+              <li>A live cell with more than three neighbours dies (overpopulation).</li>
+              <li>A live cell with two or three neighbours survives.</li>
+              <li>A dead cell with exactly three neighbours becomes alive (reproduction).</li>
+            </ul>
+
+            <h3>Aims &amp; motivation</h3>
+            <ul>
+              <li><strong>Efficient + modular:</strong> C++ simulation core with designer-friendly Blueprint controls.</li>
+              <li><strong>Extensible patterns:</strong> add/modify patterns without changing the simulation engine.</li>
+              <li><strong>Readable visuals:</strong> opacity fading, subtle animations, and clear pattern identification.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRAM OVERVIEW -->
+    <section id="overview" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Program Overview</h2>
+
+            <p>
+              The prototype runs as a self-contained Unreal level. On Play, the manager initializes the grid, optionally spawns multiple seeded patterns,
+              and advances the simulation at a configurable timestep. Designers can tune grid size, update interval, fade duration, and pattern spawn
+              settings from Blueprint.
+            </p>
+
+            <div class="grid-layout">
+              <div class="mini">
+                <h4>ACellularAutomataManager</h4>
+                <p>
+                  Owns grid state, rules, timing, and cell actor lifecycle. Exposes initialization, tick-driven update, and pattern application to Blueprints.
+                </p>
+              </div>
+              <div class="mini">
+                <h4>Pattern actors</h4>
+                <p>
+                  Pattern classes seed grid indices using offsets (Block, Beehive, Loaf, Blinker, Toad, Beacon, Glider, LWSS, MWSS).
+                </p>
+              </div>
+              <div class="mini">
+                <h4>Blueprint hooks</h4>
+                <p>
+                  Pattern selection, counts, and simulation parameters are editable in Blueprint for rapid iteration without recompiling.
+                </p>
+              </div>
+              <div class="mini">
+                <h4>Dynamic visuals</h4>
+                <p>
+                  Cells are rendered via mesh + material. Opacity, colour, and optional transforms update smoothly to communicate births/deaths and motion.
+                </p>
+              </div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLASS OVERVIEW -->
+    <section id="class-overview" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Class Overview</h2>
+
+            <div class="post-figure">
+              <img src="Images/CAPatterns.png" alt="All patterns available in the application" loading="lazy" />
+              <div class="cap">All patterns available in the application (Images/CAPatterns.png).</div>
+            </div>
+
+            <p>
+              The project structure maps Blueprint assets to C++ types: Blueprints reside in <code>All/Content/MyBlueprints</code>, derived from matching
+              C++ classes under <code>C++Classes/PGE2/Public</code>. Meshes live in <code>All/Content/MyBasicMeshes</code>, materials in
+              <code>All/Content/MyMaterials</code>, and the main level in <code>All/Content/Levels</code>.
+            </p>
+
+            <h3>Core types</h3>
+            <ol>
+              <li>
+                <strong>ACellularAutomataManager</strong> — maintains a 2D grid (<code>TArray&lt;int32&gt;</code>), updates cell states each step, and
+                spawns/destroys mesh actors for live cells. Exposes functions like <code>InitializeGrid()</code>, <code>UpdateSimulation()</code>,
+                and <code>ApplyPattern()</code>.
+              </li>
+              <li>
+                <strong>ACellPatternBase</strong> — abstract base for patterns. Subclasses provide offsets for still lifes, oscillators, and spaceships.
+                New patterns extend the library without modifying the manager (OCP-friendly).
+              </li>
+            </ol>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CODE MAP -->
+    <section id="code-map" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Code Map</h2>
+
+            <p>
+              A quick orientation of where the framework lives in the project (matching your report’s code map).
+            </p>
+
+            <ul>
+              <li><code>/C++Classes/PGE2/Public/CellularAutomataManager.h/.cpp</code> — grid logic, update loop, actor spawning.</li>
+              <li><code>/C++Classes/PGE2/Public/CellPatternBase.h/.cpp</code> — abstract base for pattern seeding + optional visual hooks.</li>
+              <li><strong>Still life:</strong> <code>BlockPattern</code>, <code>BeehivePattern</code>, <code>LoafPattern</code></li>
+              <li><strong>Oscillators:</strong> <code>BlinkerPattern</code>, <code>ToadPattern</code>, <code>BeaconPattern</code></li>
+              <li><strong>Spaceships:</strong> <code>GliderPattern</code>, <code>LWSSPattern</code>, <code>MWSSPattern</code></li>
+              <li><code>All/Content/MyBlueprints</code> — Blueprint subclasses for tuning/iteration.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY FIGURES & CODE -->
+    <section id="key-figures" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Key Figures and Representative Code</h2>
+
+            <div class="post-figure">
+              <img
+                src="Images/CAPatternInfo1.png"
+                alt="Blueprint details panel showing how to apply additional patterns"
+                loading="lazy"
+              />
+              <div class="cap">
+                Blueprint details panel showing how to apply additional patterns to the simulation (Images/CAPatternInfo1.png).
+              </div>
+            </div>
+
+            <p>
+              The architectural split is intentional: the manager owns the simulation loop and grid, while patterns are small, declarative “shape”
+              definitions. This makes the system easy to extend (add a new pattern class) without rewriting simulation code.
+            </p>
+
+            <h3>Manager header (key members)</h3>
+            <pre><code>USTRUCT(BlueprintType)
+struct FPatternSpawnInfo {
+    GENERATED_BODY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf&lt;class ACellPatternBase&gt; PatternClass;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 InstanceCount;
+};
+
+UCLASS(Blueprintable)
+class PGE2_API ACellularAutomataManager : public AActor {
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 GridWidth;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 GridHeight;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float TimeStepInterval;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float DefaultFadeTime;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMesh* CellMesh;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UMaterialInterface* BaseCellMaterial;
+
+    UFUNCTION(BlueprintCallable) void InitializeGrid();
+    UFUNCTION(BlueprintCallable) void UpdateSimulation();
+
+    UFUNCTION(BlueprintCallable)
+    void ApplyPattern(TSubclassOf&lt;class ACellPatternBase&gt; PatternClass, FVector Origin);
+
+protected:
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
+};</code></pre>
+
+            <h3>Manager implementation (pattern spawning + seeding)</h3>
+            <pre><code>void ACellularAutomataManager::BeginPlay()
+{
+    Super::BeginPlay();
+    InitializeGrid();
+
+    for(const FPatternSpawnInfo& Info : PatternSpawnInfos)
+    {
+        for(int32 i = 0; i &lt; Info.InstanceCount; i++)
+        {
+            int32 RandX = FMath::RandRange(0, GridWidth - 1);
+            int32 RandY = FMath::RandRange(0, GridHeight - 1);
+
+            FVector PatternOrigin = GetActorLocation() +
+                FVector((RandX + 0.5f)*100.f, (RandY + 0.5f)*100.f, 0.f);
+
+            ApplyPattern(Info.PatternClass, PatternOrigin);
+        }
+    }
+}
+
+void ACellularAutomataManager::ApplyPattern(TSubclassOf&lt;ACellPatternBase&gt; PatternClass, FVector Origin)
+{
+    if(!PatternClass) return;
+
+    ACellPatternBase* Pattern = GetWorld()-&gt;SpawnActor&lt;ACellPatternBase&gt;(
+        PatternClass, Origin, FRotator::ZeroRotator);
+
+    if(Pattern)
+    {
+        Pattern-&gt;ApplyPattern(this);
+        ActivePatternActors.Add(Pattern);
+    }
+}</code></pre>
+
+            <h3>Pattern base (abridged)</h3>
+            <pre><code>UCLASS(Abstract, Blueprintable)
+class PGE2_API ACellPatternBase : public AActor {
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMesh* PatternMesh;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UMaterialInterface* PatternMaterial;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor PatternColor;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float FadeTime;
+
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+    void ApplyPattern(ACellularAutomataManager* Manager);
+    virtual void ApplyPattern_Implementation(ACellularAutomataManager* Manager);
+
+protected:
+    TArray&lt;int32&gt; SeededIndices;
+};</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION DETAILS -->
+    <section id="implementation" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Implementation Details</h2>
+
+            <div class="post-figure">
+              <img
+                src="Images/CAFadingPatterns.png"
+                alt="Blueprint math expression for opacity easing"
+                loading="lazy"
+              />
+              <div class="cap">
+                Blueprint math expression node for interpolating opacity over time (Images/CAFadingPatterns.png).
+              </div>
+            </div>
+
+            <h3>Math Expression nodes</h3>
+            <ol>
+              <li>
+                <strong>Cell fade calculation:</strong> an ease-out opacity curve (quadratic) to avoid harsh popping:
+                <code>opacity = 1 - (activationTime / fadeTime)^2</code>.
+              </li>
+              <li>
+                <strong>Pattern rotation:</strong> a time-normalised rotation for spaceship visuals:
+                <code>angle = 360 * (timeElapsed / cycleDuration)</code>.
+              </li>
+            </ol>
+
+            <h3>DRY + SOLID in practice</h3>
+            <ul>
+              <li><strong>DRY:</strong> shared pattern-application logic lives in <code>ACellPatternBase</code>; patterns mostly define offsets.</li>
+              <li><strong>SRP:</strong> manager = grid/rules/timing; patterns = shapes; materials = visuals.</li>
+              <li><strong>OCP:</strong> add new patterns by subclassing, without editing the manager.</li>
+              <li><strong>LSP:</strong> any pattern subclass can be spawned/used through the base type.</li>
+              <li><strong>ISP:</strong> lean, focused interfaces for manager vs patterns.</li>
+              <li><strong>DIP:</strong> manager depends on the abstract base (not concrete patterns).</li>
+            </ul>
+
+            <h3>Challenges &amp; solutions</h3>
+            <div class="grid-layout">
+              <div class="mini">
+                <h4>Challenge: large grid performance</h4>
+                <p>
+                  Early prototypes dropped frames beyond ~100×100 due to frequent spawn/destroy churn.
+                </p>
+                <p>
+                  <strong>Solution:</strong> object pooling + partial updates. Reuse actors and update only changed cells to reduce allocation and GC overhead.
+                </p>
+              </div>
+
+              <div class="mini">
+                <h4>Challenge: sync destruction with fade</h4>
+                <p>
+                  Immediate destruction cancels the fade-out, causing abrupt visuals.
+                </p>
+                <p>
+                  <strong>Solution:</strong> delay destruction until the fade completes (timeline + callback), or use <code>SetLifeSpan</code> as a controlled teardown.
+                </p>
+              </div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUTURE WORK -->
+    <section id="future" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Future Work</h2>
+
+            <h3>Expanded pattern library</h3>
+            <ul>
+              <li><strong>Still lifes:</strong> Boat, Tub.</li>
+              <li><strong>Oscillators:</strong> Pulsar, Pentadecathlon.</li>
+              <li><strong>Spaceships:</strong> Heavyweight spaceship (HWSS).</li>
+            </ul>
+
+            <h3>Scenario system</h3>
+            <p>
+              Replace random placement with curated scenario definitions (pattern type, counts, and explicit coordinates) to support demos,
+              educational setups, and reproducible experiments (e.g., glider collisions).
+            </p>
+
+            <h3>Interactive UI (UMG)</h3>
+            <ul>
+              <li>Runtime controls for grid size, timestep interval, fade/rotation toggles.</li>
+              <li>Pattern selection + spawn controls without returning to the editor.</li>
+              <li>Start/pause/reset controls with clear state feedback.</li>
+            </ul>
+
+            <h3>Alternate rules + 3D</h3>
+            <p>
+              Extend beyond Conway’s rule set (HighLife, Day &amp; Night), and explore volumetric/3D variants with new rendering and camera constraints.
+            </p>
+
+            <h3>Performance roadmap</h3>
+            <p>
+              For very large grids: parallel updates (task graph) and/or GPU compute (compute shaders), plus instanced mesh rendering to cut draw calls.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Conclusion</h2>
+
+            <div class="post-figure">
+              <img
+                src="Images/EmergentCAPatterns.png"
+                alt="Snapshot of emergent behaviour patterns"
+                loading="lazy"
+              />
+              <div class="cap">Snapshot of emergent behaviour patterns (Images/EmergentCAPatterns.png).</div>
+            </div>
+
+            <p>
+              This work demonstrates a modular, extensible approach to Conway’s Game of Life in Unreal Engine 5.5. The manager governs grid updates and
+              lifecycle, while pattern subclasses declaratively seed structures (gliders, oscillators, still lifes). Blueprint exposure enables real-time
+              tuning, and dynamic material effects (fade/colour/optional transforms) improve readability and aesthetic continuity. Even as a 2D simulation,
+              the framework is well-positioned for richer expansions—3D automata, alternate rules, curated scenarios, and interactive UI—showcasing how
+              classic algorithmic systems benefit from modern engine tooling.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References</h2>
+
+            <ul>
+              <li>:contentReference[oaicite:2]{index=2}. <em>Unreal Engine 5.5 Documentation</em>.</li>
+              <li>:contentReference[oaicite:3]{index=3}. <em>Conway’s Game of Life</em>.</li>
+              <li>A. Sitnik and I. Solovev. <em>Easing Functions Cheat Sheet</em> (easings.net).</li>
+              <li>M. Gardner. “Mathematical Games: The Fantastic Combinations of John Conway’s New Solitaire Game ‘Life’,” <em>Scientific American</em>, Oct. 1970.</li>
+              <li>J. von Neumann. <em>Theory of Self-Reproducing Automata</em>. University of Illinois Press, 1966.</li>
+              <li>R. Nystrom. <em>Game Programming Patterns</em>, ch. “Object Pool.”</li>
+              <li>AMD. “Unreal Engine Performance Guide,” GPUOpen, 2022.</li>
+              <li>J. H. Conway. “Inventing Game of Life,” interview on YouTube (Numberphile), Mar. 2014.</li>
+              <li>D. Shiffman. “Coding Challenge #85: Conway’s Game of Life,” The Coding Train (YouTube), Jan. 2017.</li>
+              <li>T. McKenzie. “A Reddit User Created Conway’s Game of Life in UE &amp; Niagara,” 80.lv, Oct. 5, 2021.</li>
+              <li>A. Zucconi. “Conway’s Game of Life,” Oct. 13, 2020.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (TEMPLATE-MATCH)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <script defer src="js/blogpost.js"></script>
+</body>
+</html>

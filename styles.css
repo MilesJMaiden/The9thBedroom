@@ -942,6 +942,151 @@ html.js [data-sr].is-visible {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   BLOG LIST PAGE — full-bleed alternating bands + PERFECT rhythm
+   Goal:
+   - Same spacing: (navbar→header) == (header→first card) == (band top→card top)
+                 == (card bottom→band bottom) == (band→band)
+   - Full-bleed bands are 100% viewport width
+   - No “double borders”
+───────────────────────────────────────────────────────────── */
+
+/* Let blog rules control spacing (avoid global section padding doubling) */
+#blog { padding: 0; }
+
+/* Header lives INSIDE #blog.
+   We give it its own band-like block with the SAME vertical padding
+   as every .blog-band, so the rhythm is identical. */
+#blog .section-header {
+  margin: 0;                         /* remove margin-based spacing (causes mismatch) */
+  padding: var(--space-5) 0;         /* EXACT same as .blog-band padding */
+  text-align: center;
+}
+
+/* Full-bleed alternating bands wrapper */
+.blog-bands { width: 100%; }
+
+/* Full-bleed band + symmetric top/bottom padding */
+.blog-band {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+
+  padding: var(--space-5) 0;         /* band top->card top == card bottom->band bottom */
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+
+  display: block;
+}
+
+/* Alternate the band background (behind the card) */
+.blog-band:nth-child(odd)  { background-color: #e0e0e0; }
+.blog-band:nth-child(even) { background-color: #f5f5f5; }
+
+/* Ensure the card doesn't add extra spacing that breaks symmetry */
+#blog .project-card.left,
+#blog .project-card.right {
+  margin: 0;                         /* remove margin-bottom that makes bottom spacing larger */
+}
+
+/* Prevent a “double border” between header block and first band */
+.blog-band:first-child { border-top: 0; }
+
+/* Mobile rhythm — keep header + bands identical */
+@media (max-width: 767px) {
+  #blog .section-header { padding: var(--space-4) 0; }
+  .blog-band { padding: var(--space-4) 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BLOG CONTROLS + TAG + LOAD MORE
+───────────────────────────────────────────────────────────── */
+
+.blog-controls{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: 0 0 var(--space-4) 0;
+}
+
+.blog-control{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.blog-control-label{
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.blog-select{
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  outline: none;
+}
+
+.blog-select:focus{
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+}
+
+/* Tag pill on image */
+#blog .project-image{ position: relative; }
+
+.blog-tag{
+  position:absolute;
+  left: 12px;
+  top: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+}
+
+/* Load more container */
+.blog-load-more{
+  padding: var(--space-4) 0 var(--space-5) 0;
+  text-align:center;
+}
+
+.btn-load-more{
+  min-width: 180px;
+}
+
+.btn-load-more[aria-disabled="true"],
+.btn-load-more:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.blog-load-more-hint{
+  margin: 12px 0 0 0;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+/* Mobile tuning */
+@media (max-width: 767px){
+  .blog-controls{
+    justify-content: stretch;
+  }
+  .blog-control{
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
    CONTACT
 ───────────────────────────────────────────────────────────── */
 #contact { padding: 50px 0; }
@@ -1474,6 +1619,9 @@ body.lightbox-open { overflow: hidden; }
   /* Slightly tighter image gap on very small screens */
   :root { --img-gap: 10px; }
 }
+
+
+
 
 /* ─────────────────────────────────────────────────────────────
    SVG glow for logo icon (kept)

@@ -30,6 +30,11 @@
       background-color: #666;
       color: #fff;
     }
+
+    /* Requested: spacing AFTER the "View All Blog Posts" button */
+    #blog .center-btn {
+      margin-bottom: 32px;
+    }
   </style>
 
   <!-- preload main stylesheet -->
@@ -58,6 +63,11 @@
     href="https://unpkg.com/swiper@7/swiper-bundle.min.css"
     crossorigin="anonymous"
   >
+
+  <!-- Enable JS mode ASAP (pairs with html.js CSS rules if present) -->
+  <script>
+    document.documentElement.classList.add("js");
+  </script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -71,14 +81,14 @@
       </a>
 
       <!-- primary nav links -->
-		<div class="navbar-links">
-		  <a href="#home" class="active">Home</a>
-		  <a href="#about">About</a>
-		  <a href="#projects">Projects</a>
-		  <a href="#gallery">Portfolio</a>
-		  <a href="#blog">Blog</a>
-		  <a href="cv.html">Contact</a>
-		</div>
+      <div class="navbar-links">
+        <a href="#home" class="active">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
 
       <!-- hamburger toggle -->
       <button
@@ -95,16 +105,16 @@
         </svg>
       </button>
 
-	<div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
-	  <a role="menuitem" href="#home">Home</a>
-	  <a role="menuitem" href="#about">About</a>
-	  <a role="menuitem" href="#projects">Projects</a>
-	  <a role="menuitem" href="#gallery">Portfolio</a>
-	  <a role="menuitem" href="#blog">Blog</a>
-	  <a role="menuitem" href="cv.html">Contact</a>
-	  <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
-	</div>
-
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
   </header>
 
   <main id="main">
@@ -331,19 +341,18 @@
           </div>
         </div>
 
-			<button class="swiper-button-prev slider-btn" aria-label="Previous gallery slide" type="button">
-			  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-				<path d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
-			  </svg>
-			</button>
+        <button class="swiper-button-prev slider-btn" aria-label="Previous gallery slide" type="button">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15.41 16.58L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.58Z"/>
+          </svg>
+        </button>
 
-			<button class="swiper-button-next slider-btn" aria-label="Next gallery slide" type="button">
-			  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-				<path d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
-			  </svg>
-			</button>
-
-		</div>
+        <button class="swiper-button-next slider-btn" aria-label="Next gallery slide" type="button">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8.59 16.58L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.58Z"/>
+          </svg>
+        </button>
+      </div>
 
       <div class="center-btn">
         <a href="gallery.html" class="btn view-all-btn">View Gallery</a>
@@ -391,9 +400,13 @@
           </div>
         </div>
       </div>
+
       <div class="center-btn">
         <a href="blog.html" class="btn view-all-btn">View All Blog Posts</a>
       </div>
+
+      <!-- extra safety spacer (in case center-btn margin is overridden elsewhere) -->
+      <div aria-hidden="true" style="height: 16px;"></div>
     </section>
 
   </main>

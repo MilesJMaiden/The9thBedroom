@@ -5,10 +5,11 @@
    - Consistent mobile nav (hamburger) + ARIA
    - Smooth scrolling for same-page anchors with navbar offset
    - Optional reveal system (matches your CSS html.js rules)
-   - Safe active-link highlighting (page + hash)
+   - Safe active-link highlighting (handles ../ paths + hashes)
    ====================================================================== */
 
 // Mark JS as enabled so CSS can safely run reveal animations (html.js ...)
+// Safe to run immediately even with defer.
 document.documentElement.classList.add("js");
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -16,6 +17,13 @@ document.addEventListener("DOMContentLoaded", function () {
      Utilities
   ====================================================================== */
   const $ = window.jQuery || null;
+
+  const prefersReducedMotion = () => {
+    return (
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  };
 
   const getNavbarOffset = () => {
     const navbar = document.querySelector(".navbar");
@@ -25,18 +33,21 @@ document.addEventListener("DOMContentLoaded", function () {
   // Smooth scroll helper (uses jQuery animate if available; falls back to native)
   const smoothScrollToY = (targetY, duration = 650) => {
     const y = Math.max(0, Math.round(targetY));
+    const dur = prefersReducedMotion() ? 0 : duration;
 
-    if ($) {
-      $("html, body").stop(true).animate({ scrollTop: y }, duration);
+    if ($ && dur > 0) {
+      $("html, body").stop(true).animate({ scrollTop: y }, dur);
       return;
     }
 
-    window.scrollTo({ top: y, behavior: "smooth" });
+    // Native smooth scroll; if reduced motion, jump instantly
+    window.scrollTo({ top: y, behavior: dur === 0 ? "auto" : "smooth" });
   };
 
   const getMenuEls = () => {
     const navbarMenu =
-      document.querySelector("#navbar-menu") || document.querySelector(".navbar-menu");
+      document.querySelector("#navbar-menu") ||
+      document.querySelector(".navbar-menu");
     const hamburger = document.querySelector(".hamburger");
     const closeMenuBtn = document.querySelector(".close-menu-btn");
     const menuItems = navbarMenu ? Array.from(navbarMenu.querySelectorAll("a")) : [];
@@ -62,6 +73,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const { navbarMenu } = getMenuEls();
     if (!navbarMenu) return;
     if (navbarMenu.classList.contains("active")) setMenuOpen(false);
+  };
+
+  // Normalize an href into { page: "blog.html", hash: "#about" }
+  // Works for: "../blog.html", "../index.html#about", "blog.html", "#section"
+  const parseHref = (hrefRaw) => {
+    const href = (hrefRaw || "").trim();
+    if (!href) return { page: "", hash: "" };
+
+    // Same-page anchor
+    if (href.startsWith("#")) return { page: "", hash: href };
+
+    // Use URL to resolve ../ paths safely
+    try {
+      const u = new URL(href, window.location.href);
+      const page = (u.pathname.split("/").pop() || "").toLowerCase();
+      const hash = (u.hash || "").toLowerCase();
+      return { page, hash };
+    } catch {
+      // Fallback: best-effort
+      const parts = href.split("#");
+      const page = (parts[0].split("/").pop() || "").toLowerCase();
+      const hash = parts[1] ? `#${parts[1].toLowerCase()}` : "";
+      return { page, hash };
+    }
   };
 
   /* ======================================================================
@@ -92,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!clickedInsideMenu && !clickedHamburger) setMenuOpen(false);
     });
 
-    // Optional: hide hamburger near top of page (kept from your reference, but safe)
+    // Optional: hide hamburger near top of page
     const navbar = document.querySelector(".navbar");
 
     const handleScroll = () => {
@@ -195,29 +230,38 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /* ======================================================================
-     5) Active navbar item on load (safer rules)
-        - page links: match by pathname
-        - in-page anchors: match by hash
+     5) Active navbar item on load (robust for ../ paths + hashes)
+        - Marks Blog active when href resolves to blog.html
+        - Also supports index.html#about etc. from post pages
+        - Does NOT try to mark TOC buttons (those are usually not in navbar-links)
   ====================================================================== */
   {
     const links = document.querySelectorAll(".navbar-links a");
     if (!links.length) return;
 
-    const currentPath = window.location.pathname.split("/").pop() || "index.html";
-    const currentHash = window.location.hash;
+    const currentPage = (window.location.pathname.split("/").pop() || "").toLowerCase();
+    const currentHash = (window.location.hash || "").toLowerCase();
 
     links.forEach((link) => {
-      const href = link.getAttribute("href") || "";
+      const hrefRaw = link.getAttribute("href") || "";
+      const { page, hash } = parseHref(hrefRaw);
 
-      // page links
-      if (href.endsWith(".html")) {
-        link.classList.toggle("active", href === currentPath);
+      // If it's a same-page hash-only link in navbar (rare on post pages)
+      if (!page && hash) {
+        link.classList.toggle("active", hash === currentHash);
         return;
       }
 
-      // in-page anchors (blog TOC pages, etc.)
-      if (href.startsWith("#")) {
-        link.classList.toggle("active", href === currentHash);
+      // If it resolves to a page, match by filename
+      if (page) {
+        const isSamePage = page === currentPage;
+
+        // If link has a hash, require it to match as well (for index.html#about etc.)
+        if (hash) {
+          link.classList.toggle("active", isSamePage && hash === currentHash);
+        } else {
+          link.classList.toggle("active", isSamePage);
+        }
       }
     });
   }

@@ -1,0 +1,822 @@
+<!--
+  File: blog-post-mim-asset-loading.html
+  Goal:
+  - Uses blog-post-influx.html as the template (same structure, classes, ARIA, JS hook).
+  - Alternating full-width section backgrounds (like index.html).
+  - Content stays constrained inside .post-container.
+  - Converts your LaTeX report into a readable blog post (not a PDF mirror).
+  - Keeps code snippets + figures + citations section.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Modular XR Asset-Loading Pipeline (MiM)</title>
+  <meta
+    name="description"
+    content="Design and Implementation of a Modular XR Asset-Loading Pipeline for Museums in the Metaverse (MiM): AES encryption, multiplexed streams, in-memory HTTP serving, reference-counted caching, SOLID refactors, and TDD/CI benchmarks."
+  />
+
+  <!-- inline critical CSS for skip-link & minimal nav paint -->
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+    }
+
+    /* Keep minimal nav paint while CSS loads (do not fight styles.css) */
+    header, .navbar {
+      background-color: #666;
+      color: #fff;
+    }
+
+    /* BLOG: alternate section backgrounds like index.html */
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    /* Section rhythm: full-width bands, content constrained */
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    /* Ensure first section doesn't hide under navbar */
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    /* Ensure gap before footer */
+    body.blog-post-page main#main > section:last-of-type {
+      padding-bottom: var(--space-5);
+    }
+
+    /* Optional: tighter code readability without changing your global styles */
+    pre code { white-space: pre; }
+  </style>
+
+  <!-- preload main stylesheet -->
+  <link rel="preload" href="../styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (MATCHES YOUR TEMPLATE)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="../images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog" class="active">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">Industry Placement Report • Soluis / MiM (2024–2025)</p>
+            <h1 class="post-title">Design &amp; Implementation of a Modular XR Asset-Loading Pipeline</h1>
+            <p class="post-subtitle">
+              During my placement at <strong>Soluis</strong> on <strong>Museums in the Metaverse (MiM)</strong>, I designed and delivered a scalable Unity
+              file-loading pipeline with <em>AES encryption</em>, <em>multiplexed streams</em>, <em>in-memory HTTP serving</em>, and
+              <em>reference-counted caching</em>. In parallel, I refactored VR UI and rig/portal systems using <strong>SOLID</strong>, <strong>DRY</strong>,
+              and an <strong>event-driven</strong> architecture, backed by <strong>TDD</strong> and CI benchmarking.
+            </p>
+
+            <div class="post-actions">
+              <!-- Replace these with real links if you want -->
+              <a class="btn" href="blog.html">Back to Blog</a>
+              <a class="btn" href="cv.html">Contact</a>
+            </div>
+
+            <div class="post-meta">
+              <div class="meta-box">
+                <p class="meta-label">Author</p>
+                <p class="meta-value">Joshua J. Davies</p>
+              </div>
+              <div class="meta-box">
+                <p class="meta-label">Company</p>
+                <p class="meta-value">Soluis (formerly Edify)</p>
+              </div>
+              <div class="meta-box">
+                <p class="meta-label">Focus</p>
+                <p class="meta-value">Unity • XR • Asset loading • AES • HTTP in-memory • Caching • TDD</p>
+              </div>
+            </div>
+
+            <!-- Optional banner image: set to an existing asset you have.
+                 If you want the title-page logo image from the report, put it in images/ and update src. -->
+            <div class="post-banner">
+              <img
+                src="images/placeholder-blog-3.jpg"
+                alt="Cover image for Modular XR Asset-Loading Pipeline blog post"
+                loading="lazy"
+              />
+            </div>
+            <p class="post-caption">Cover image placeholder — replace with a relevant project image or diagram.</p>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#context">CONTEXT</a>
+                <a class="filter-btn" href="#agile">AGILE PROCESS</a>
+                <a class="filter-btn" href="#radial-menu">RADIAL MENU</a>
+                <a class="filter-btn" href="#refactoring">REFACTORING</a>
+                <a class="filter-btn" href="#pipeline">FILE LOADING PIPELINE</a>
+                <a class="filter-btn" href="#testing">TESTING (TDD)</a>
+                <a class="filter-btn" href="#architecture">ARCHITECTURE</a>
+                <a class="filter-btn" href="#discussion">DISCUSSION</a>
+                <a class="filter-btn" href="#future">FUTURE WORK</a>
+                <a class="filter-btn" href="#conclusion">CONCLUSION</a>
+                <a class="filter-btn" href="#references">REFERENCES</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              This post summarizes my industry placement on the Museums in the Metaverse (MiM) platform at Soluis.
+              I built a scalable Unity asset-loading pipeline featuring AES encryption, multiplexed streams, in-memory HTTP serving,
+              and reference-counted caching. The system reduced average asset load time and decreased memory overhead by ensuring that
+              decoded resources are shared across consumers and reclaimed automatically when no longer referenced. In parallel, I refactored
+              key VR UI and scene systems (radial menus, notes panels, portals, and Photon rigs), adopting SOLID/DRY principles and an
+              event-driven architecture. A test-driven workflow using NUnit/Unity Test Runner achieved &gt;90% coverage across core pipeline
+              components, and integrated benchmarks in CI provided regression protection for load time, memory, and GC behavior.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTEXT -->
+    <section id="context" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Project Context</h2>
+
+            <h3>Museums in the Metaverse (MiM)</h3>
+            <p>
+              MiM is an XR Culture &amp; Heritage platform that enables virtual visitors to explore museum collections and curated experiences.
+              The platform aims to unlock collections that would otherwise remain in storage, broadening access and enabling new storytelling models.
+            </p>
+
+            <h3>Company background</h3>
+            <p>
+              Soluis is a Glasgow-based XR and digital visualization studio (with offices in London and Dubai), delivering CGI and immersive
+              applications across industries. MiM is developed with partners including heritage and museum organizations and academic labs.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGILE PROCESS -->
+    <section id="agile" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Agile Development Process</h2>
+
+            <div class="grid-layout">
+              <div class="mini">
+                <h4>Sprint Planning</h4>
+                <p>Two-week sprints with backlog review in JIRA and complexity scoring (1–10) to plan capacity and ownership.</p>
+              </div>
+              <div class="mini">
+                <h4>Branching &amp; Tracking</h4>
+                <p>Work branched from Epics using a consistent naming convention; commits referenced JIRA IDs and cards progressed through review/testing gates.</p>
+              </div>
+              <div class="mini">
+                <h4>Code Review &amp; Integration</h4>
+                <p>Pull requests to Epic branches, structured feedback loops, and merges gated by review and testing.</p>
+              </div>
+              <div class="mini">
+                <h4>Ceremonies</h4>
+                <p>Daily stand-ups, sprint reviews (stakeholder demos), and retrospectives to maintain transparency and improve delivery cadence.</p>
+              </div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RADIAL MENU -->
+    <section id="radial-menu" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Radial Menu Generation</h2>
+
+            <p>
+              In the Lesson Creator toolset, users needed an intuitive, visually consistent menu suitable for VR. A static menu does not scale
+              across lesson plans with different option counts or visual requirements. I implemented a fully dynamic radial menu system in Unity
+              capable of generating an arbitrary number of segments with per-segment overrides (angle, colour, vertex density), and optional mesh
+              combining for draw-call reduction and asset export.
+            </p>
+
+            <div class="post-figure">
+              <img src="RadialMenu.png" alt="Unity Editor: radial menu development with validation highlighting" loading="lazy" />
+              <div class="cap">Unity Editor: development view showing a missing-material bug before enforcing defaults (RadialMenu.png).</div>
+            </div>
+
+            <p>
+              The generator validates input constraints (e.g., vertex density), computes remaining angular space once overrides and spacing are accounted
+              for, then builds each wedge as a triangle fan between inner/outer radii. I also added a safety check to enforce a default material when a
+              segment colour/material is missing (preventing Unity’s “pink” material error state).
+            </p>
+
+            <div class="post-figure">
+              <img src="RadialMenuIcons.png" alt="Unity Editor: final radial menu after mesh combining" loading="lazy" />
+              <div class="cap">Final radial menu: correctly coloured wedges, merged into one mesh for performance (RadialMenuIcons.png).</div>
+            </div>
+
+            <h3>Radial menu generation (key excerpt)</h3>
+            <pre><code>public class RadialMenuButtons : MonoBehaviour
+{
+    [SerializeField] int   numberOfSegments = 7;
+    [SerializeField] float innerRadius      = 5f;
+    [SerializeField] float outerRadius      = 10f;
+    [SerializeField] float spacing          = 5f;
+    [SerializeField] float startingAngle    = 0f;
+    [SerializeField, Range(3,100)]
+    int verticesPerSegment = 15;
+
+    [Serializable]
+    public struct SegmentSize
+    {
+        public int   index;
+        public float angle;
+        public Color color;
+        public int   vertexCount;
+    }
+
+    [SerializeField] List&lt;SegmentSize&gt; segmentSizes = new();
+
+    void GenerateRadialMenu()
+    {
+        if (verticesPerSegment &lt; 3 || verticesPerSegment % 3 != 0)
+        {
+            Debug.LogError("verticesPerSegment must be ≥3 and divisible by 3.");
+            return;
+        }
+
+        float totalDefined = segmentSizes.Sum(s =&gt; s.angle);
+        float totalSpacing = spacing * numberOfSegments;
+        float remaining    = 360f - totalDefined - totalSpacing;
+        float defaultAngle = remaining / (numberOfSegments - segmentSizes.Count);
+
+        float angle = startingAngle + spacing/2f;
+        foreach (var child in transform.Cast&lt;Transform&gt;())
+            Destroy(child.gameObject);
+
+        for (int i = 0; i &lt; numberOfSegments; i++)
+        {
+            var seg = segmentSizes.FirstOrDefault(s =&gt; s.index == i);
+            float a = (seg.index == i) ? seg.angle       : defaultAngle;
+            int   v = (seg.index == i) ? seg.vertexCount : verticesPerSegment;
+
+            CreateSegment(i, angle, a, v,
+                (seg.index == i) ? seg.color : Color.white);
+
+            angle += a + spacing;
+        }
+    }
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFACTORING -->
+    <section id="refactoring" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Optimization &amp; Refactoring</h2>
+            <p>
+              To improve maintainability and runtime stability, I refactored several controllers by removing duplicated logic, centralizing common
+              workflows, and adopting an event-driven architecture (event aggregation). The aim was to reduce UI desync bugs, eliminate polling,
+              and make future enhancements cheaper (single change points).
+            </p>
+
+            <h3>NotesPanelController: centralized UI sync</h3>
+            <p>
+              The original controller scattered Instantiate/Destroy across multiple flows (initialization, navigation, edits), producing stale UI states.
+              The refactor consolidates rebuild logic into <code>SyncUI()</code> and subscribes to lesson content events so the UI updates automatically.
+            </p>
+
+            <pre><code>public void SyncUI()
+{
+    // 1. Clear existing UI
+    foreach (var kvp in m_Notes)
+        Destroy(kvp.Key.gameObject);
+    m_Notes.Clear();
+
+    // 2. Rebuild from lesson data
+    var notes = m_LessonManager.Get()
+        .SelectedLesson.LessonData.Data.Notes.Values;
+
+    foreach (var note in notes)
+        CreateNoteUI(ConvertToNoteInfo(note));
+}
+
+private void OnEnable()
+{
+    var ea = m_EventAggregator.Get();
+    ea.GetEvent&lt;ContentAddedToLessonEvent&gt;()
+      .Subscribe(_ =&gt; SyncUI());
+    ea.GetEvent&lt;ContentDetailsChangedEvent&gt;()
+      .Subscribe(_ =&gt; SyncUI());
+    ea.GetEvent&lt;ContentRemovedFromLessonEvent&gt;()
+      .Subscribe(_ =&gt; SyncUI());
+}</code></pre>
+
+            <h3>Portal + Rig: unify module filtering and event wiring</h3>
+            <p>
+              Portal and rig systems had duplicated filtering logic for local vs remote modules and used readiness polling. I consolidated module pruning,
+              replaced polling with events, and centralized TRSable integration to be robust regardless of component load order.
+            </p>
+
+            <pre><code>private void FilterAndRemoveModules(RigPhotonInstantiationData data)
+{
+    for (int i = m_Modules.Count - 1; i &gt;= 0; i--)
+    {
+        var module = m_Modules[i];
+        bool remove = (IsLocal &amp;&amp; !module.UseModuleIfLocal)
+                   || (!IsLocal &amp;&amp; !module.UseModuleIfRemote);
+
+        if (remove)
+        {
+            Destroy(module.ModuleOwnsObject ? module.gameObject : (Object)module);
+            m_Modules.RemoveAt(i);
+        }
+    }
+    m_Modules.ForEach(m =&gt; m.OnPhotonInstantiation(data));
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILE LOADING PIPELINE -->
+    <section id="pipeline" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">File Loading System</h2>
+
+            <p>
+              The file-loading system was the largest single feature I owned. The core objective was to provide a unified way to load heterogeneous assets
+              (models, textures, audio, video, PDFs) while avoiding duplicated format-specific logic across features.
+              The pipeline is format-agnostic and layered:
+            </p>
+
+            <ul>
+              <li><strong>Encryption &amp; Decryption:</strong> multiplexed streams packaged into a single asset, optionally AES encrypted.</li>
+              <li><strong>In-memory HTTP serving:</strong> substreams exposed via localhost URIs for consumption through UnityWebRequest.</li>
+              <li><strong>Reference-counted caching:</strong> resources shared across consumers and evicted automatically when released.</li>
+              <li><strong>Per-type loaders:</strong> loader components (model/image/audio/video/pdf) registered in a manager with one uniform API.</li>
+            </ul>
+
+            <h3>Loader manager routing (simplified)</h3>
+            <pre><code>public async Task&lt;IFileResource&gt; LoadFileAsync(Guid id, string path)
+{
+    var ext = Path.GetExtension(path).ToLowerInvariant();
+    if (!m_FileLoaderLookup.TryGetValue(ext, out var loader))
+    {
+        Debug.LogError($"No loader for extension '{ext}'");
+        return new NullFileResource(id);
+    }
+
+    try
+    {
+        var resource = await loader.LoadFileAsync(id, path);
+        return resource;
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"Failed to load '{path}': {ex.Message}");
+        return new NullFileResource(id);
+    }
+}</code></pre>
+
+            <h3>Encoding &amp; decoding contract</h3>
+            <pre><code>public interface IFileEncoder
+{
+    Stream EncodeFiles(string primaryFilePath, IEnumerable&lt;string&gt; additionalPaths, bool encrypt);
+}
+
+public interface IFileDecoder
+{
+    Dictionary&lt;string, Stream&gt; DecodeFile(string path, out string primaryFile);
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTING -->
+    <section id="testing" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Unit Testing &amp; TDD</h2>
+
+            <p>
+              Because the pipeline spans encryption, stream slicing, HTTP serving, caching, and importer-specific integrations, reliability depends on a strong
+              testing strategy. I used NUnit + Unity Test Runner with isolated fixtures (mock decoders/loaders) plus integration tests (HTTP round-trips and
+              real importer execution where appropriate). This achieved &gt;90% coverage across core pipeline classes and improved regression detection in CI.
+            </p>
+
+            <h3>Reference-counted cache eviction test</h3>
+            <pre><code>[Test]
+public void RegisterNewFileResource_ShouldRemoveWhenReleased()
+{
+    var id  = Guid.NewGuid();
+    var res = new FileResource(id);
+
+    m_DataCollection.AddData(res, id);
+    m_DataCollection.RegisterNewFileResource(res);
+
+    bool removed = false;
+    m_DataCollection.ResourceRemoved += (rid, data) =&gt; removed = rid == id;
+
+    res.Release();
+
+    Assert.IsTrue(removed);
+    Assert.IsFalse(m_DataCollection.TryGetData(id, out _));
+}</code></pre>
+
+            <h3>Local HTTP server round-trip test</h3>
+            <pre><code>[Test]
+public void HandleRequest_ShouldReturnCorrectContent()
+{
+    var ms = new MemoryStream();
+    new StreamWriter(ms){AutoFlush=true}.Write("hello");
+    ms.Position = 0;
+
+    m_ServerManager.AddServerResource(ms, "foo", "test.txt");
+
+    var uri  = m_ServerManager.GetURI("foo");
+    var resp = (HttpWebResponse)WebRequest.Create(uri).GetResponse();
+
+    using var rdr = new StreamReader(resp.GetResponseStream());
+    Assert.AreEqual("hello", rdr.ReadToEnd());
+}</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">System Architecture</h2>
+
+            <p>
+              The pipeline is composed of five cooperating layers: a loader manager (routing), a decoder (header parsing + AES decryption + substreams),
+              a local HTTP server (URI exposure), a reference-counted cache (lifetime management), and an encoder (packaging + optional encryption).
+              The core design intent is <strong>format agnosticism</strong> (new loaders can be added without modifying central routing code) and
+              <strong>in-memory delivery</strong> (UnityWebRequest can consume resources without disk IO).
+            </p>
+
+            <div class="post-figure">
+              <img
+                src="FileLoadingSystemFull.png"
+                alt="Conceptual architecture of the file-loading pipeline"
+                loading="lazy"
+              />
+              <div class="cap">
+                Conceptual architecture of the file-loading pipeline (FileLoadingSystemFull.png).
+                Ensure this image is in your site root or correct the path.
+              </div>
+            </div>
+
+            <h3>Runtime sequence</h3>
+            <ol>
+              <li><strong>Routing:</strong> FileLoaderManager selects the correct loader by extension or resource type.</li>
+              <li><strong>Decoding:</strong> IFileDecoder reads header, decrypts if needed, and emits named substreams.</li>
+              <li><strong>Serving:</strong> LocalServerManager assigns each substream a localhost URI.</li>
+              <li><strong>Loading + caching:</strong> loader constructs an IFileResource, registers it with the ref-count cache, and returns it.</li>
+              <li><strong>Release:</strong> consumers release; cache decrements ref counts and evicts at zero.</li>
+            </ol>
+
+            <div class="post-figure">
+              <img
+                src="FullLoad.png"
+                alt="Unity Editor: model loaded via decryption + local HTTP server"
+                loading="lazy"
+              />
+              <div class="cap">Unity Editor: a GLTF model decrypted, served via local HTTP, and loaded into the scene (FullLoad.png).</div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- DISCUSSION -->
+    <section id="discussion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Discussion</h2>
+
+            <h3>Contribution to the company</h3>
+            <ul>
+              <li>
+                <strong>Modular asset-loading framework:</strong> unified import and load APIs across many formats with shared decoding,
+                local HTTP serving, and reference-counted caching.
+              </li>
+              <li>
+                <strong>TDD + SOLID refactoring:</strong> improved maintainability, reduced regressions, and increased coverage in critical systems.
+              </li>
+              <li>
+                <strong>Performance-optimized UI components:</strong> reduced draw calls and improved runtime stability through batching and event-driven updates.
+              </li>
+              <li>
+                <strong>Knowledge sharing:</strong> living documentation and workshops to reduce support overhead and improve onboarding.
+              </li>
+            </ul>
+
+            <h3>Reflection</h3>
+            <div class="grid-layout">
+              <div class="mini">
+                <h4>What went well</h4>
+                <p>Agile cadence, disciplined reviews, modular/event-driven architecture, and documentation-first practices.</p>
+              </div>
+              <div class="mini">
+                <h4>Areas to improve</h4>
+                <p>Earlier domain-expert UX validation and more integrated performance regression checks in CI.</p>
+              </div>
+              <div class="mini">
+                <h4>Takeaways</h4>
+                <p>Balancing rapid delivery with sustainable architecture; testing as a design tool; and clear cross-disciplinary communication.</p>
+              </div>
+            </div>
+
+            <h3>Challenges and solutions (highlights)</h3>
+            <ul>
+              <li><strong>Networking complexity:</strong> factory-based rig instantiation and event-driven lifecycle updates.</li>
+              <li><strong>Robust asset loading:</strong> centralized loader discovery and routing with shared services.</li>
+              <li><strong>Encryption + substream boundaries:</strong> cleartext header + AES payload, validated by byte-level unit tests.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUTURE -->
+    <section id="future" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Future Work</h2>
+
+            <ul>
+              <li><strong>CI-driven performance regression:</strong> run benchmark subsets on merges and detect load/memory/GC regressions automatically.</li>
+              <li><strong>Hot-swappable loaders:</strong> load/unload format plugins at runtime to expand support without rebuilding.</li>
+              <li><strong>Pluggable cache eviction:</strong> LRU/time-based policies via strategy interfaces.</li>
+              <li><strong>Secure CDN-backed streaming:</strong> HTTPS endpoints, tokenized URLs, and upstream proxying for production-scale delivery.</li>
+              <li><strong>In-editor dashboard:</strong> live cache/ref-count/server introspection for diagnostics and leak detection.</li>
+              <li><strong>Cross-platform validation:</strong> automated end-to-end tests across desktop and mobile targets.</li>
+              <li><strong>Content orchestration toolkit:</strong> ScriptableObject/node tooling for non-technical package assembly and preview.</li>
+              <li><strong>AR format support:</strong> USDZ/XYZ/PCD/PLY pipeline integration for mobile AR experiences.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Conclusion</h2>
+            <p>
+              This placement solidified a scalable Unity foundation for MiM: a modular, event-driven asset-loading pipeline that unifies diverse
+              formats under a single API, supports AES-encrypted packages, serves decoded substreams via in-memory localhost URIs, and manages lifetimes
+              through reference-counted caching. Alongside that, SOLID-driven refactors improved UI and runtime stability, while TDD and CI-integrated
+              benchmarks provided confidence against regressions. The outcome is a maintainable architecture that can grow with new formats, deployment
+              constraints, and content workflows.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References</h2>
+
+            <ul>
+              <li>Unity Technologies. <em>Unity Manual: Scripting</em> (2025).</li>
+              <li>Unity Technologies. <em>UnityWebRequest</em> documentation (2025).</li>
+              <li>Unity Technologies. <em>Testing Your Code (Unity Test Framework)</em> (Unity 6.0 docs, 2025).</li>
+              <li>Unity Technologies. <em>Unity Profiler</em> documentation (2025).</li>
+              <li>Unity Technologies. <em>XR Interaction Toolkit</em> package docs (latest).</li>
+              <li>P. Monteiro et al. “Comparison of Radial and Panel Menus in Virtual Reality,” <em>IEEE Access</em>, 2019.</li>
+              <li>Exit Games. <em>Photon Unity Networking 2 (PUN)</em> documentation (2023).</li>
+              <li>Martin Fowler. “Event Aggregator (Draft Pattern),” 2004.</li>
+              <li>Khronos Group. <em>glTF 2.0 Specification</em> (ISO/IEC 12113:2022).</li>
+              <li>M. Atteneder. <em>glTFast</em> (GitHub), 2023.</li>
+              <li>Assimp Contributors. <em>Assimp: Open Asset Import Library</em>, 2021.</li>
+              <li>ISO/IEC. <em>COLLADA Digital Asset Schema Specification</em>, 2012.</li>
+              <li>ITU-T. <em>Recommendation T.81 (JPEG)</em>, 1992.</li>
+              <li>W3C. <em>PNG Specification (Second Edition)</em>, 2003.</li>
+              <li>Microsoft Learn. <em>HttpListener Class (System.Net)</em>, 2023.</li>
+              <li>Microsoft Learn. <em>File and Stream I/O (System.IO)</em>, 2023.</li>
+              <li>Microsoft Learn. <em>Asynchronous programming with async and await (C#)</em>, 2022.</li>
+              <li>Microsoft Learn. <em>Reflection in .NET</em>, 2023.</li>
+              <li>Unity Technologies. <em>Unity Manual: Plug-ins</em> (2025).</li>
+              <li>Unity Learn. <em>Memory Management and Object Caching</em> (Best Practices), 2022.</li>
+              <li>Innovate UK. “Museums in the Metaverse (MiM) Project Overview,” 2024.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (MATCHES YOUR TEMPLATE)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Blog-post JS (dedicated) -->
+  <script defer src="js/blogpost.js"></script>
+</body>
+</html>

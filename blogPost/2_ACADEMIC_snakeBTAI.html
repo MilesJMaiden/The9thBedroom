@@ -1,0 +1,683 @@
+<!--
+  File: blog-post-snake-bt-ai.html
+
+  Notes:
+  - Same blog-post template structure as your previous HTML posts (navbar, alternating section bands, post-container).
+  - Replace image paths: SnakeScatter.png, SnakeScatter2.png, behaviourTreeDiagram.png (or export the TikZ figure).
+  - If your navbar routes to index sections, swap "#about" etc. for "index.html#about".
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>SnakeAI: Behavior Tree-Based AI with Dual Pathfinding + Risk Flood-Fill</title>
+  <meta
+    name="description"
+    content="A behavior tree Snake AI using BFS with A* fallback, risk-adjusted flood-fill safety, and utility-based decisions. Includes architecture, tree breakdown, and performance scatter plots."
+  />
+
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus { position: static; width: auto; height: auto; }
+
+    header, .navbar { background-color: #666; color: #fff; }
+
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    pre { overflow-x: auto; }
+    pre code { white-space: pre; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .meta-tile {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .meta-tile .k { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+    .meta-tile .v { font-weight: 700; margin: 6px 0 0; }
+
+    .post-figure { margin-top: 18px; }
+    .post-figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #ccc; }
+    .post-figure .cap { font-size: 0.9rem; opacity: 0.9; margin-top: 8px; }
+
+    .callout {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.7);
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+    .callout h3 { margin-top: 0; }
+
+    .pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-top: 10px; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid #ccc; border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+    .pill i { opacity: 0.85; }
+
+    table.basic {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table.basic th, table.basic td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+    table.basic th { background: rgba(0,0,0,0.06); }
+    table.basic tr:last-child td { border-bottom: none; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .ref-list { margin: 0; padding-left: 18px; }
+    .ref-list li { margin-bottom: 8px; }
+  </style>
+
+  <link rel="preload" href="../styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (TEMPLATE-MATCH)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="../images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <div class="navbar-links">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Portfolio</a>
+        <a href="#blog" class="active">Blog</a>
+        <a href="cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="#home">Home</a>
+        <a role="menuitem" href="#about">About</a>
+        <a role="menuitem" href="#projects">Projects</a>
+        <a role="menuitem" href="#gallery">Portfolio</a>
+        <a role="menuitem" href="#blog">Blog</a>
+        <a role="menuitem" href="cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">Game AI • Behavior Trees • Pathfinding • Safety Estimation</p>
+
+            <h1 class="post-title">
+              SnakeAI: Behavior Tree-Based Agent with Dual Pathfinding + Risk Flood-Fill
+              <span style="display:block; font-size:0.7em; font-weight:400; opacity:0.9;">
+                BFS → A* fallback • risk-adjusted flood-fill • utilities • async tasks
+              </span>
+            </h1>
+
+            <p class="post-subtitle">
+              This post distills my IEEE-style report for <strong>SnakeAI_jdavi005</strong>: a behavior tree agent for
+              :contentReference[oaicite:0]{index=0} that balances aggressive food pursuit with defensive survival.
+              The AI combines a fast shortest-path strategy (BFS) with a robust fallback (A*), layers in risk-weighted safety estimation
+              via flood-fill, and uses utilities to arbitrate between competing intents (eat vs. escape).
+            </p>
+
+            <div class="post-actions">
+              <a class="btn" href="blog.html">Back to Blog</a>
+              <a class="btn" href="cv.html">Contact</a>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-tile">
+                <p class="k">Engine</p>
+                <p class="v">:contentReference[oaicite:1]{index=1} (C#)</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Core paradigm</p>
+                <p class="v">Hierarchical Behavior Tree + Blackboard</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Planning</p>
+                <p class="v">BFS shortest path, A* fallback</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Safety</p>
+                <p class="v">Risk-adjusted flood-fill + escape utility</p>
+              </div>
+            </div>
+
+            <div class="pill-row" aria-label="Quick highlights">
+              <span class="pill"><i class="fas fa-project-diagram"></i>Behavior tree selectors</span>
+              <span class="pill"><i class="fas fa-route"></i>BFS + A*</span>
+              <span class="pill"><i class="fas fa-water"></i>Flood-fill safety</span>
+              <span class="pill"><i class="fas fa-balance-scale"></i>Utility arbitration</span>
+              <span class="pill"><i class="fas fa-tasks"></i>Async offload</span>
+            </div>
+
+            <div class="callout">
+              <h3 style="margin-bottom:8px;">TL;DR</h3>
+              <ul style="margin:0; padding-left: 18px;">
+                <li><strong>Food chasing</strong> is allowed only when the post-path state remains “escapable.”</li>
+                <li><strong>Risk flood-fill</strong> treats cramped corridors / wall-adjacent cells as effectively smaller free space.</li>
+                <li><strong>Behavior tree priority</strong> guarantees emergency handling and tail-following override greedy impulses.</li>
+              </ul>
+            </div>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#architecture">ARCHITECTURE</a>
+                <a class="filter-btn" href="#pathfinding">DUAL PATHFINDING</a>
+                <a class="filter-btn" href="#safety">RISK FLOOD-FILL</a>
+                <a class="filter-btn" href="#bt">BEHAVIOR TREE</a>
+                <a class="filter-btn" href="#results">RESULTS</a>
+                <a class="filter-btn" href="#future">FUTURE WORK</a>
+                <a class="filter-btn" href="#refs">REFERENCES</a>
+              </div>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              I implemented a behavior tree Snake agent that operates on a grid, collects food, and avoids collisions with walls and its own body.
+              The solution integrates dual pathfinding (BFS with A* fallback), risk-adjusted flood-fill to estimate safe reachable area, and utility
+              functions that dynamically decide whether to pursue food or execute escape maneuvers. A blackboard caches expensive computations, and
+              heavy routines are offloaded asynchronously for responsiveness.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">System Architecture</h2>
+
+            <p>
+              The AI is built as a small set of tightly-scoped subsystems that feed a behavior tree decision layer. The guiding principle is to keep the tree
+              legible: each branch represents a tactical “mode” (emergency, tail-following, specialized food chase), while shared primitives (pathfinding,
+              area safety, best-move evaluation) are implemented as reusable services.
+            </p>
+
+            <div class="two-col">
+              <div class="callout">
+                <h3>Core components</h3>
+                <ul style="margin:0; padding-left:18px;">
+                  <li><strong>Pathfinding:</strong> BFS shortest path with A* fallback.</li>
+                  <li><strong>Safety estimation:</strong> flood-fill + risk-adjusted flood-fill.</li>
+                  <li><strong>Utilities:</strong> food utility vs. escape utility.</li>
+                  <li><strong>BT blackboard:</strong> shared cached state (areas, paths, mode flags).</li>
+                </ul>
+              </div>
+
+              <div class="callout">
+                <h3>Design intent</h3>
+                <ul style="margin:0; padding-left:18px;">
+                  <li><strong>Fast by default:</strong> BFS covers the common case.</li>
+                  <li><strong>Robust under stress:</strong> A* engages when BFS degrades.</li>
+                  <li><strong>Survival-first:</strong> safe tail access overrides food greed.</li>
+                  <li><strong>Low jitter:</strong> async tasks prevent main-loop stalls.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PATHFINDING -->
+    <section id="pathfinding" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Dual Pathfinding: BFS → A* Fallback</h2>
+
+            <p>
+              The agent uses BFS for shortest paths in typical, moderately open grids. When BFS becomes inefficient (excess revisits, blocked exploration,
+              or dense body occupancy), it falls back to A* using Manhattan distance as the heuristic. This hybrid approach delivers speed in most frames,
+              while retaining a “pressure-tested” option when the state space becomes hostile.
+            </p>
+
+            <div class="callout">
+              <h3>Custom priority queue (for A*)</h3>
+              <p style="margin:0 0 10px;">
+                A binary heap-backed priority queue keeps the A* frontier sorted by cost efficiently.
+              </p>
+              <pre><code>public class PriorityQueue&lt;T&gt;
+{
+    private List&lt;(T item, float priority)&gt; elements = new();
+
+    public int Count =&gt; elements.Count;
+
+    public void Enqueue(T item, float priority)
+    {
+        elements.Add((item, priority));
+        int ci = elements.Count - 1;
+        while (ci &gt; 0)
+        {
+            int pi = (ci - 1) / 2;
+            if (elements[ci].priority &gt;= elements[pi].priority) break;
+            (elements[ci], elements[pi]) = (elements[pi], elements[ci]);
+            ci = pi;
+        }
+    }
+
+    public T Dequeue()
+    {
+        int li = elements.Count - 1;
+        T frontItem = elements[0].item;
+        elements[0] = elements[li];
+        elements.RemoveAt(li);
+
+        int pi = 0;
+        while (true)
+        {
+            int ci = pi * 2 + 1;
+            if (ci &gt;= elements.Count) break;
+            int rc = ci + 1;
+            if (rc &lt; elements.Count &amp;&amp; elements[rc].priority &lt; elements[ci].priority) ci = rc;
+            if (elements[pi].priority &lt;= elements[ci].priority) break;
+            (elements[pi], elements[ci]) = (elements[ci], elements[pi]);
+            pi = ci;
+        }
+        return frontItem;
+    }
+}</code></pre>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAFETY -->
+    <section id="safety" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Safety Estimation: Risk-Adjusted Flood-Fill</h2>
+
+            <p>
+              “Free space” isn’t uniformly safe in Snake. A cell in a narrow corridor can be technically reachable, but functionally lethal because it reduces
+              future maneuverability. To approximate this, the AI computes both a standard flood-fill area and a risk-adjusted variant that penalizes
+              wall-adjacent cells and tight passages—effectively treating them as lower-value space.
+            </p>
+
+            <table class="basic" aria-label="Safety estimation summary">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>What it measures</th>
+                  <th>Why it matters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>FloodFillArea</td>
+                  <td>Raw reachable free tiles from a candidate cell.</td>
+                  <td>Baseline “can I move around?” estimate.</td>
+                </tr>
+                <tr>
+                  <td>FloodFillAreaRiskAdjusted</td>
+                  <td>Reachable area with penalties for risky topology.</td>
+                  <td>Prevents self-traps in corridors / edge hugging.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="callout">
+              <h3>Practical outcome</h3>
+              <p style="margin:0;">
+                Food pursuit is treated as acceptable only if the post-move state preserves a sufficient “escape budget” (risk-adjusted free area + tail access).
+                This is the difference between a snake that scores well early and one that survives late-game density.
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEHAVIOR TREE -->
+    <section id="bt" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Behavior Tree: Priority First, Utility Second</h2>
+
+            <p>
+              The decision logic is encoded as a hierarchical behavior tree where a root selector prioritizes specialized branches.
+              The ordering is intentional: emergency handling and defensive tail-following must pre-empt greedy food chasing. Only when
+              “must-not-die” checks pass does the system consider food pursuit variants, and finally a utility selector arbitrates when
+              both strategies are viable.
+            </p>
+
+            <div class="callout">
+              <h3>High-level branch ordering</h3>
+              <ol style="margin:0; padding-left:18px;">
+                <li><strong>Emergency handling</strong> (very low safe moves) → safest move immediately.</li>
+                <li><strong>Defensive tail-following</strong> (very long snake / low area) → retreat to preserve mobility.</li>
+                <li><strong>No-safe-path fallback</strong> → tail-following if food is unreachable or unsafe.</li>
+                <li><strong>Complete path planning</strong> (head→food and food→tail exist) → follow planned first step.</li>
+                <li><strong>Specialized food pursuit</strong> (corner, wall-adjacent, immediate, greedy, safe-wait).</li>
+                <li><strong>Utility decision</strong> (FoodUtility vs EscapeUtility) → pick higher score branch.</li>
+                <li><strong>Last-resort fallbacks</strong> → always move toward tail / wait until safe move exists.</li>
+              </ol>
+            </div>
+
+            <div class="post-figure">
+              <img
+                src="behaviourTreeDiagram.png"
+                alt="Behavior tree diagram showing prioritized branches and fallback strategies"
+                loading="lazy"
+              />
+              <div class="cap">
+                Behavior Tree diagram (exported from TikZ). Root selector prioritizes emergency + defensive branches ahead of food pursuit.
+              </div>
+            </div>
+
+            <div class="callout">
+              <h3>Blackboard usage</h3>
+              <p style="margin:0;">
+                The blackboard caches expensive computations (paths, flood-fill areas, risk scores) and shares mode flags (aggressive vs cautious).
+                This keeps node actions deterministic and reduces redundant work across branches during each tick.
+              </p>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Results: Classic vs Challenge Mode</h2>
+
+            <p>
+              I evaluated the AI using two scatter plots, each covering 500 iterations in both Classic and Challenge modes (1000 tests total across both plots).
+              The plots show <strong>score (food eaten)</strong> vs <strong>game ticks</strong>, with medians reported per mode.
+            </p>
+
+            <div class="two-col">
+              <div class="post-figure">
+                <img
+                  src="SnakeScatter2.png"
+                  alt="Scattergraph test 1: Classic vs Challenge mode performance"
+                  loading="lazy"
+                />
+                <div class="cap">
+                  Test 1 (500 iterations). Classic median: <strong>129</strong> over <strong>3120</strong> ticks.
+                  Challenge median: <strong>70</strong> over <strong>2453</strong> ticks.
+                </div>
+              </div>
+
+              <div class="post-figure">
+                <img
+                  src="SnakeScatter.png"
+                  alt="Scattergraph test 2: Classic vs Challenge mode performance"
+                  loading="lazy"
+                />
+                <div class="cap">
+                  Test 2 (500 iterations). Classic median: <strong>128</strong> over <strong>3108.5</strong> ticks.
+                  Challenge median: <strong>70</strong> over <strong>2900.5</strong> ticks.
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              <h3>Interpretation</h3>
+              <ul style="margin:0; padding-left:18px;">
+                <li><strong>Classic mode:</strong> the agent sustains long runs by preserving maneuvering area and using tail-following as a reset mechanism.</li>
+                <li><strong>Challenge mode:</strong> harsher constraints increase the cost of corridor mistakes; risk-adjusted flood-fill reduces (but cannot eliminate) edge-case traps.</li>
+                <li><strong>Stability:</strong> medians are consistent across tests, indicating the policy is not overly dependent on lucky food placement.</li>
+              </ul>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUTURE WORK -->
+    <section id="future" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Conclusion and Future Work</h2>
+
+            <p>
+              This Snake AI shows how behavior trees can remain readable while still integrating non-trivial planning and safety estimation. The hybrid pathfinding
+              strategy handles most board states efficiently, the risk-adjusted flood-fill provides a practical approximation of “real” safety, and utility
+              arbitration reduces brittle if/else decision logic.
+            </p>
+
+            <table class="basic" aria-label="Future work table">
+              <thead>
+                <tr>
+                  <th>Direction</th>
+                  <th>What changes</th>
+                  <th>Why it helps</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Adaptive thresholds</td>
+                  <td>Dynamically tune “min free area” / risk penalties based on length + topology.</td>
+                  <td>Reduces over/under-conservatism late game.</td>
+                </tr>
+                <tr>
+                  <td>Deeper planning</td>
+                  <td>Try IDA* or limited rollouts for multi-step trap detection.</td>
+                  <td>Better anticipates corridor lock-ins.</td>
+                </tr>
+                <tr>
+                  <td>Learning layer</td>
+                  <td>Learn utility weights or risk penalties from gameplay data.</td>
+                  <td>Improves generalization across map variants.</td>
+                </tr>
+                <tr>
+                  <td>Compute budgeting</td>
+                  <td>Frame-budgeted scheduling for pathfinding + flood-fill tasks.</td>
+                  <td>Guarantees stable tick time under extreme density.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="refs" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References / Credits</h2>
+
+            <ul class="ref-list">
+              <li>S. Russell &amp; P. Norvig — <em>Artificial Intelligence: A Modern Approach</em> (3rd ed.).</li>
+              <li>:contentReference[oaicite:2]{index=2} — A* pathfinding implementation write-up.</li>
+              <li>:contentReference[oaicite:3]{index=3} — Behavior tree library used as a foundation.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (TEMPLATE-MATCH)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <script defer src="js/blogpost.js"></script>
+</body>
+</html>

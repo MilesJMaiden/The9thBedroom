@@ -1,0 +1,787 @@
+<!--
+  File: blogPost/1_ACADEMIC_lSystemRenderer.html
+
+  Notes:
+  - Same template + structure as your previous blog post page.
+  - Alternating full-width background bands; content constrained via .post-container.
+  - Image filenames mirror your LaTeX (adjust paths if your site structure differs).
+  - Replace anchor-only navbar links with index.html#... if needed.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Procedural Graphics: Fully Customizable L-System Renderer</title>
+  <meta
+    name="description"
+    content="A Unity-based, fully customizable L-System renderer for real-time procedural plant generation: Burst + Jobs optimizations, stochastic rules, pruning interaction, and a designer-friendly UI."
+  />
+
+  <style>
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      z-index: 1000;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+    }
+
+    header, .navbar { background-color: #666; color: #fff; }
+
+    body.blog-post-page main#main > section:nth-of-type(odd)  { background-color: #e0e0e0; }
+    body.blog-post-page main#main > section:nth-of-type(even) { background-color: #f5f5f5; }
+
+    body.blog-post-page main#main > section {
+      padding: var(--space-5) 0;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      scroll-margin-top: calc(var(--nav-h) + var(--space-2));
+    }
+
+    body.blog-post-page main#main > section:first-of-type {
+      padding-top: calc(var(--space-5) + var(--nav-h));
+    }
+
+    body.blog-post-page main#main > section:last-of-type {
+      padding-bottom: var(--space-5);
+    }
+
+    /* Code block readability while staying consistent with your CSS */
+    pre { overflow-x: auto; }
+    pre code { white-space: pre; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .meta-tile {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .meta-tile .k { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+    .meta-tile .v { font-weight: 700; margin: 6px 0 0; }
+
+    /* Small helper for figure captions if your styles.css doesn’t already define it */
+    .post-figure { margin-top: 18px; }
+    .post-figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid #ccc; }
+    .post-figure .cap { font-size: 0.9rem; opacity: 0.9; margin-top: 8px; }
+  </style>
+
+  <!-- IMPORTANT: this page lives in blogPost/, so styles.css is one level up -->
+  <link rel="preload" href="../styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="../styles.css"></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+    rel="stylesheet"
+    crossorigin="anonymous"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    crossorigin="anonymous"
+  >
+</head>
+
+<body class="blog-post-page">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- =========================================================
+       HEADER / NAVBAR (TEMPLATE-MATCH)
+       ========================================================= -->
+  <header>
+    <nav class="navbar" role="navigation">
+      <a href="../index.html" class="brand-logo" aria-label="9TH BEDROOM home">
+        <img src="../images/logo.svg" alt="9th Bedroom logo" class="logo-icon">
+        <span class="logo-text">9TH BEDROOM</span>
+      </a>
+
+      <!-- IMPORTANT: post pages should link back to index anchors, not # on this page -->
+      <div class="navbar-links">
+        <a href="../index.html#home">Home</a>
+        <a href="../index.html#about">About</a>
+        <a href="../projects.html">Projects</a>
+        <a href="../gallery.html">Portfolio</a>
+        <a href="../blog.html" class="active">Blog</a>
+        <a href="../cv.html">Contact</a>
+      </div>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="navbar-menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <rect y="2"  width="24" height="2" rx="1"/>
+          <rect y="11" width="24" height="2" rx="1"/>
+          <rect y="20" width="24" height="2" rx="1"/>
+        </svg>
+      </button>
+
+      <div id="navbar-menu" class="navbar-menu" role="menu" aria-hidden="true">
+        <a role="menuitem" href="../index.html#home">Home</a>
+        <a role="menuitem" href="../index.html#about">About</a>
+        <a role="menuitem" href="../projects.html">Projects</a>
+        <a role="menuitem" href="../gallery.html">Portfolio</a>
+        <a role="menuitem" href="../blog.html">Blog</a>
+        <a role="menuitem" href="../cv.html">Contact</a>
+        <button class="close-menu-btn" type="button" aria-label="Close menu">&times;</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================
+       BLOG POST PAGE
+       ========================================================= -->
+  <main id="main">
+
+    <!-- HERO -->
+    <section class="blog-post-hero post-section" id="top">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card">
+            <p class="post-kicker">Procedural Graphics • Unity • CW1 • ~27 pages</p>
+            <h1 class="post-title">Procedural Graphics: <em>Fully Customizable L-System Renderer</em></h1>
+
+            <p class="post-subtitle">
+              This post documents the development of a fully customizable L-System renderer for real-time procedural plant generation in Unity.
+              The system blends a designer-friendly UI with performance-oriented implementation using :contentReference[oaicite:0]{index=0}’s
+              Job System and Burst Compiler, and follows SOLID design principles. Key features include stochastic rule application, interactive pruning
+              with growth adaptation, and a modular architecture that supports future expansion into mesh-based 3D rendering and parametric/adaptive L-Systems.
+            </p>
+
+            <div class="post-actions">
+              <a class="btn" href="../blog.html">Back to Blog</a>
+              <a class="btn" href="../cv.html">Contact</a>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-tile">
+                <p class="k">Author</p>
+                <p class="v">Joshua J. Davies</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Course</p>
+                <p class="v">Mathematics for Games &amp; V/AR • CW1</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Engine</p>
+                <p class="v">Unity (Jobs + Burst)</p>
+              </div>
+              <div class="meta-tile">
+                <p class="k">Core focus</p>
+                <p class="v">Procedural plant generation (L-Systems)</p>
+              </div>
+            </div>
+
+            <div class="post-banner">
+              <img
+                src="../StochasticWillowTreeRender.png"
+                alt="Stochastic willow tree L-System render"
+                loading="lazy"
+              />
+            </div>
+            <p class="post-caption">Stochastic willow tree L-System render (StochasticWillowTreeRender.png).</p>
+
+            <div class="post-toc" aria-label="Table of contents">
+              <div class="filter-container">
+                <a class="filter-btn" href="#abstract">ABSTRACT</a>
+                <a class="filter-btn" href="#introduction">INTRODUCTION</a>
+                <a class="filter-btn" href="#background">BACKGROUND</a>
+                <a class="filter-btn" href="#features">FEATURES</a>
+                <a class="filter-btn" href="#implementation">IMPLEMENTATION</a>
+                <a class="filter-btn" href="#design">SYSTEM DESIGN</a>
+                <a class="filter-btn" href="#rules">RULES &amp; COMMANDS</a>
+                <a class="filter-btn" href="#challenges">CHALLENGES</a>
+                <a class="filter-btn" href="#results">RESULTS</a>
+                <a class="filter-btn" href="#conclusion">CONCLUSION</a>
+                <a class="filter-btn" href="#references">REFERENCES</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section id="abstract" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Abstract</h2>
+            <p>
+              This paper explores the development of a fully customizable L-System renderer for procedural plant generation and real-time visualization.
+              By leveraging Unity’s Job System, Burst Compiler, and SOLID design principles, the system provides a user-friendly interface for editing
+              L-System parameters, enabling stochastic generation, and simulating pruning effects with growth adaptation. The project applies principles
+              from algorithmic botany—first proposed by :contentReference[oaicite:1]{index=1}—to generate intricate
+              plant-like structures with minimal computational overhead. Future improvements include adaptive and parametric L-Systems, and extending the
+              rendering pipeline from line primitives to mesh-based 3D geometry.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section id="introduction" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Introduction</h2>
+
+            <p>
+              Lindenmayer Systems (L-Systems) were introduced in 1968 as a formal grammar for describing growth processes in plants and organisms.
+              An L-System defines an initial axiom and a set of recursive production rules; repeated rule application yields complex structures from
+              compact definitions. This project implements a fully customizable L-System renderer in Unity to support real-time visualization and
+              parameter-driven iteration, including advanced features such as stochastic rule selection, 3D-ready extensibility, and pruning-driven
+              adaptation.
+            </p>
+
+            <h3>Project goals</h3>
+            <ul>
+              <li>Real-time visualization with immediate feedback during parameter changes.</li>
+              <li>User manipulation of axiom, rules, angles, iterations, and segment length.</li>
+              <li>Optional advanced features: stochastic systems, pruning, wind effects, and 3D extension points.</li>
+              <li>Maintainable architecture aligned with SOLID and performance constraints.</li>
+            </ul>
+
+            <p>
+              Beyond visuals, interactive procedural models have applications in simulation and design tooling—e.g., ecological modelling and
+              concept exploration for sustainable environments—where controllable growth rules provide a compact “generative language”.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACKGROUND -->
+    <section id="background" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Background and Literature Review</h2>
+
+            <p>
+              L-Systems originated as biological growth models and evolved into a foundational technique for procedural graphics. Their adoption in
+              computer-generated imagery accelerated through <em>The Algorithmic Beauty of Plants</em> by Prusinkiewicz and Lindenmayer, which showed how
+              deterministic grammars can produce rich botanical forms. Subsequent work introduced stochastic, parametric, and context-sensitive variants,
+              improving realism and expressive power.
+            </p>
+
+            <p>
+              Modern applications extend to procedural architecture and planning workflows—where formal grammars can encode repeating structure—
+              but many tools limit customization or lack real-time interactivity. This renderer targets that gap by combining editable configuration assets
+              with fast iteration and interactive simulation features.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Features</h2>
+
+            <h3>User Interface (UI)</h3>
+            <ul>
+              <li>Dropdown menus for selecting predefined configurations.</li>
+              <li>Sliders / input fields for angle, iterations, and segment length.</li>
+              <li>Toggles for stochastic generation, pruning, and wind effects.</li>
+              <li>Real-time updates: parameter change → regenerate → re-render.</li>
+            </ul>
+
+            <div class="post-figure">
+              <img
+                src="../User-Interface and Bamboo L-System Render.png"
+                alt="User interface and example L-System render"
+                loading="lazy"
+              />
+              <div class="cap">UI and example render (User-Interface and Bamboo L-System Render.png).</div>
+            </div>
+
+            <h3>Code analysis: slider integration</h3>
+            <pre><code>public void OnAngleSliderChanged(float newAngle) {
+    currentConfig.Angle = newAngle;
+    GenerateLSystem();
+}</code></pre>
+            <p>
+              Binding UI controls directly to regeneration creates a tight feedback loop: users iterate on angle/iterations/length with immediate visual
+              confirmation, which is essential for procedural authoring workflows.
+            </p>
+
+            <h3>Rendering modes</h3>
+            <p><strong>Current:</strong> Line rendering via Unity’s <code>LineRenderer</code>.</p>
+            <ul>
+              <li><strong>Advantages:</strong> lightweight, performant, ideal for rapid iteration and debugging.</li>
+              <li><strong>Limitations:</strong> reduced fidelity; limited lighting/shading realism compared to mesh rendering.</li>
+            </ul>
+
+            <p><strong>Planned enhancement:</strong> Mesh rendering for 3D geometry, enabling URP/HDRP lighting, shadowing, and textured leaves/branches.</p>
+
+            <h3>Stochastic systems</h3>
+            <p>
+              Stochastic L-Systems introduce probabilistic rule application, producing varied outcomes per generation—useful for natural-looking
+              variation without hand-authoring multiple deterministic grammars.
+            </p>
+
+            <pre><code>private string ApplyStochasticRules(string input) {
+    StringBuilder nextString = new StringBuilder();
+    foreach (char c in input) {
+        bool ruleApplied = false;
+        foreach (var rule in Rules) {
+            if (rule.Predecessor == c && Random.value &lt; rule.Probability) {
+                nextString.Append(rule.Successor);
+                ruleApplied = true;
+                break;
+            }
+        }
+        if (!ruleApplied) {
+            nextString.Append(c);
+        }
+    }
+    return nextString.ToString();
+}</code></pre>
+
+            <h3>Pruning and adaptation</h3>
+            <p>
+              Pruning removes a branch at runtime by clicking a node, then updates the underlying L-System representation to reflect the modified structure.
+              This supports “damage → regrowth” style demonstrations and interactive procedural modelling.
+            </p>
+
+            <pre><code>public void Prune(Node nodeToRemove) {
+    foreach (var branch in nodeToRemove.Branches) {
+        Destroy(branch.gameObject);
+    }
+    UpdateLSystemAfterPrune(nodeToRemove);
+}
+
+private void UpdateLSystemAfterPrune(Node prunedNode) {
+    // Adjust the L-System string to remove affected branches
+    string updatedString = generator.PruneString(currentConfig.Axiom, prunedNode.ID);
+    GenerateLSystem(updatedString);
+}</code></pre>
+
+            <div class="post-figure">
+              <img src="../PruningNode.png" alt="Highlighted and clickable pruning node" loading="lazy" />
+              <div class="cap">Highlighted and clickable pruning node (PruningNode.png).</div>
+            </div>
+
+            <h3>Customizability</h3>
+            <p>
+              The system supports up to fourteen configurations (including the required six deterministic 2D systems), covering both classic fractal
+              structures (e.g., Sierpinski-style forms) and custom botanical presets (stochastic trees, adaptive plants). Configs are authored as assets
+              for reuse and rapid iteration.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- IMPLEMENTATION -->
+    <section id="implementation" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Implementation</h2>
+
+            <p>
+              The implementation leverages Unity’s component model and modern optimization primitives. Responsibilities are cleanly separated into:
+              <code>LSystemGenerator</code> (string grammar), <code>LSystemRenderer</code> (turtle interpretation + drawing), and
+              <code>LSystemUIController</code> (event-driven UI updates). This aligns with SOLID and keeps the renderer extensible.
+            </p>
+
+            <h3>Core architecture (SOLID)</h3>
+            <ul>
+              <li><strong>SRP:</strong> generator handles grammar; renderer handles visualization; UI controller handles interaction.</li>
+              <li><strong>OCP:</strong> new rendering modes (e.g., mesh) can be added via new renderer types rather than editing the generator.</li>
+              <li><strong>Extensibility:</strong> rule types can evolve toward parametric/context-sensitive variants.</li>
+            </ul>
+
+            <h3>L-System generator</h3>
+            <ul>
+              <li><strong>Parallelized string generation:</strong> use Jobs to distribute expansion across CPU cores for higher iteration counts.</li>
+              <li><strong>Burst acceleration:</strong> compile hot loops into optimized native code to reduce CPU cost.</li>
+              <li><strong>Stochastic support:</strong> probabilistic selection for multi-rule predecessors.</li>
+              <li><strong>Memory discipline:</strong> <code>StringBuilder</code> + Native containers to reduce GC pressure.</li>
+            </ul>
+
+            <h3>Optimizations</h3>
+            <ul>
+              <li><strong>Burst Compiler:</strong> reduces CPU time for expansion and rule evaluation.</li>
+              <li><strong>NativeArray/NativeList:</strong> keeps data in performant containers to limit allocations.</li>
+              <li><strong>Pooling:</strong> reuses line renderers and nodes to avoid instantiate/destroy churn.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYSTEM DESIGN -->
+    <section id="design" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">System Design and Key Implementations</h2>
+
+            <h3>Rule application (deterministic)</h3>
+            <pre><code>private string ApplyRules(string input) {
+    StringBuilder nextString = new StringBuilder();
+    foreach (char c in input) {
+        bool ruleApplied = false;
+        foreach (var rule in Rules) {
+            if (rule.Predecessor == c) {
+                nextString.Append(rule.Successor);
+                ruleApplied = true;
+                break;
+            }
+        }
+        if (!ruleApplied) {
+            nextString.Append(c);
+        }
+    }
+    return nextString.ToString();
+}</code></pre>
+
+            <h3>Configuration management (ScriptableObjects)</h3>
+            <p>
+              Configurations are encapsulated as reusable assets, allowing presets and user-authored configurations to share the same pipeline.
+              A rule struct optionally includes probability for stochastic systems.
+            </p>
+
+            <pre><code>[CreateAssetMenu(fileName = "NewLSystemConfig", menuName = "L-System/Config")]
+public class LSystemConfig : ScriptableObject {
+    public string Axiom;
+    public Rule[] Rules;
+    public float Angle;
+    public int Iterations;
+    public float Length;
+}
+
+[System.Serializable]
+public struct Rule {
+    public char Predecessor;
+    public string Successor;
+    public float Probability; // Optional for stochastic systems
+}</code></pre>
+
+            <div class="post-figure">
+              <img
+                src="../PlantConfigScriptableObject.png"
+                alt="Unity Editor interface of a ScriptableObject L-System configuration"
+                loading="lazy"
+              />
+              <div class="cap">Example ScriptableObject configuration in Unity (PlantConfigScriptableObject.png).</div>
+            </div>
+
+            <h3>Rendering pipeline (turtle graphics)</h3>
+            <pre><code>foreach (char command in config.Axiom) {
+    switch (command) {
+        case 'F':
+            Vector3 nextPosition = currentPosition +
+                                   currentRotation * Vector3.up * config.Length;
+            DrawLine(currentPosition, nextPosition);
+            currentPosition = nextPosition;
+            break;
+        case '+':
+            currentRotation *= Quaternion.Euler(0, 0, config.Angle);
+            break;
+        case '-':
+            currentRotation *= Quaternion.Euler(0, 0, -config.Angle);
+            break;
+        case '[':
+            stack.Push(new BranchState(currentPosition, currentRotation));
+            break;
+        case ']':
+            BranchState state = stack.Pop();
+            currentPosition = state.Position;
+            currentRotation = state.Rotation;
+            break;
+    }
+}</code></pre>
+
+            <h3>Dynamic configuration updates</h3>
+            <pre><code>public void UpdateConfig(LSystemConfig newConfig) {
+    currentConfig = newConfig;
+    GenerateLSystem();
+}
+
+private void GenerateLSystem() {
+    string generatedString = generator.Generate(currentConfig);
+    renderer.Render(generatedString, currentConfig);
+}</code></pre>
+
+            <h3>Wind manager (Perlin-driven sway)</h3>
+            <pre><code>float gust = Mathf.PerlinNoise(Time.time * WindFrequency, 0f) * Gustiness;
+float swayX = Mathf.Sin(Time.time * WindFrequency) * WindStrength + gust;
+float swayY = Mathf.Cos(Time.time * WindFrequency * 0.5f) * WindStrength * 0.7f;
+Quaternion windRotation = Quaternion.Euler(new Vector3(swayX, swayY, 0));
+branch.LineRendererObject.transform.localRotation *= windRotation;</code></pre>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES & COMMANDS -->
+    <section id="rules" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Rule Definitions and Functions</h2>
+
+            <p>
+              The renderer implements a turtle-graphics style interpreter where each symbol maps to a drawing or state command. The core set enables
+              branching, curvature, thickness/length variation, and decorative instantiation (leaves/flowers), while remaining extensible for custom rules.
+            </p>
+
+            <ul>
+              <li><code>F</code> — forward move + draw segment (branch/stem).</li>
+              <li><code>+</code> / <code>-</code> — rotate clockwise / counterclockwise by <code>Angle</code>.</li>
+              <li><code>[</code> / <code>]</code> — push/pop position + rotation (branching).</li>
+              <li><code>L</code> — leaf placement (probabilistic; user controlled).</li>
+              <li><code>X</code> — flower placement (randomized scale/offset/rotation ranges).</li>
+              <li><code>T</code> — thickness variation (tapering via LineRenderer width).</li>
+              <li><code>B</code> — curvature/bend command (fixed or stochastic).</li>
+              <li><code>V</code> — length variation (non-uniform growth).</li>
+              <li><strong>Custom rules</strong> — loaded via config / UI for experimentation.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHALLENGES -->
+    <section id="challenges" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Challenges and Limitations</h2>
+
+            <h3>Performance bottlenecks</h3>
+            <p>
+              Very high iteration counts and complex stochastic configurations can still produce frame drops, especially where branching growth
+              increases string length exponentially and stochastic evaluation increases rule checks.
+            </p>
+            <p><strong>Potential mitigation:</strong> GPU-accelerated string processing and/or compute-driven rendering.</p>
+
+            <h3>UI complexity for novices</h3>
+            <p>
+              L-System parameters (axiom/rules/probabilities) can be conceptually dense.
+              Tooltips, interactive tutorials, and contextual presets would reduce the learning curve.
+            </p>
+
+            <h3>Pruning/adaptation realism limits</h3>
+            <p>
+              Current adaptation recalculates structure after removal but doesn’t yet model environment-driven growth (light/nutrients).
+              Adaptive systems and constraint-based growth are natural extensions.
+            </p>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Results</h2>
+
+            <p>
+              The system generates a wide range of deterministic and stochastic L-System models in real-time. It accurately reproduces classic
+              fractals (e.g., Koch-style curves, dragon-curve-like forms), produces varied stochastic tree silhouettes, and supports interactive pruning
+              that demonstrates structural adaptation after branch removal.
+            </p>
+
+            <h3>Required deterministic configurations</h3>
+            <ol>
+              <li><strong>Config A:</strong> branching plant, <em>n</em>=5, δ=25.7°</li>
+              <li><strong>Config B:</strong> denser branching, <em>n</em>=5, δ=20°</li>
+              <li><strong>Config C:</strong> bush-like structure, <em>n</em>=4, δ=22.5°</li>
+              <li><strong>Config D:</strong> X/F rule variant, <em>n</em>=7, δ=20°</li>
+              <li><strong>Config E:</strong> more complex branching, <em>n</em>=7, δ=25.7°</li>
+              <li><strong>Config F:</strong> stochastic-like appearance via grammar, <em>n</em>=5, δ=22.5°</li>
+            </ol>
+
+            <div class="post-figure">
+              <img
+                src="../Picture of the 6 L-System Renders outlined.png"
+                alt="Recreated outputs of the six required configurations"
+                loading="lazy"
+              />
+              <div class="cap">
+                Recreated outputs of the six required configurations (Picture of the 6 L-System Renders outlined.png).
+              </div>
+            </div>
+
+            <div class="post-figure">
+              <img src="../L-SystemUI.png" alt="Example of a stochastic tree generated by the system" loading="lazy" />
+              <div class="cap">Example of a stochastic tree generated by the system (L-SystemUI.png).</div>
+            </div>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section id="conclusion" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">Conclusion</h2>
+
+            <p>
+              This project achieved its goal of creating a fully customizable L-System renderer for real-time procedural graphics in Unity.
+              Stochastic rule support and interactive pruning extend classic algorithmic botany into a more simulation-like workflow, and the architecture
+              remains maintainable through SOLID-driven separation of concerns. The use of Jobs, Burst, native containers, and pooling allows the system
+              to remain responsive even under complex configurations.
+            </p>
+
+            <h3>Future work</h3>
+            <ul>
+              <li>Parametric and adaptive L-Systems (environment-driven growth constraints).</li>
+              <li>Mesh-based 3D rendering with lighting, shadowing, and material variation.</li>
+              <li>Integration with external datasets (biological measurements / procedural constraints).</li>
+              <li>Further performance scaling through GPU compute for expansion and rendering.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="../blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section id="references" class="post-section">
+      <div class="post-container">
+        <div class="blog-post-wrap">
+          <article class="blog-post-card fade-in-slide">
+            <h2 class="post-section-title">References</h2>
+
+            <ul>
+              <li>A. Lindenmayer. “Mathematical models for cellular interaction in development,” <em>Journal of Theoretical Biology</em>, 1968.</li>
+              <li>P. Prusinkiewicz and A. Lindenmayer. <em>The Algorithmic Beauty of Plants</em>. Springer-Verlag, 1990.</li>
+              <li>M. Hansmeyer. “L-Systems in Architecture,” 2003.</li>
+              <li>J. Santell. “L-Systems,” 2019.</li>
+              <li>A. K. Samal, B. Peterson, and D. J. Holliday. “Recognising Plants Using Stochastic L-Systems,” 1994.</li>
+              <li>P. Bourke. “L-System User Notes,” 1991.</li>
+              <li>:contentReference[oaicite:2]{index=2}. Unity Documentation.</li>
+              <li>D. Ebert et al. <em>Texturing and Modeling: A Procedural Approach</em>. Morgan Kaufmann, 2002.</li>
+              <li>K. Perlin. “An Image Synthesizer,” <em>ACM SIGGRAPH Computer Graphics</em>, 1985.</li>
+              <li>P. Prusinkiewicz. “Recent Advances in the Modeling of Plants Using L-Systems,” <em>Frontiers in Plant Science</em>, 2015.</li>
+            </ul>
+
+            <div class="post-nav">
+              <a class="view-all-btn" href="#top">Back to top</a>
+              <a class="view-all-btn" href="../blog.html">Back to blog</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER (TEMPLATE-MATCH)
+       ========================================================= -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Joshua Davies. All rights reserved.</p>
+      <ul class="social-media-links">
+        <li>
+          <a href="https://www.linkedin.com/in/joshuajdavies/" target="_blank" class="linkedin" rel="noopener">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/MilesJMaiden" target="_blank" class="github" rel="noopener">
+            <i class="fab fa-github"></i>
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/MilesJMaiden" target="_blank" class="twitter" rel="noopener">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="instagram" rel="noopener">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" target="_blank" class="facebook" rel="noopener">
+            <i class="fab fa-facebook"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- IMPORTANT: this page lives in blogPost/, so blogpost.js is one level up -->
+  <script defer src="../js/blogpost.js"></script>
+</body>
+</html>
